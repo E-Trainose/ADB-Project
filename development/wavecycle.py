@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 
 # Load your CSV file
-data = pd.read_csv('C:/Users/ILYAZRA/Documents/tugas/ADB/new/dataset_valve_teh1.csv')
+data = pd.read_csv('/new/dataset_valve_teh1.csv')
 
 # Function to plot one wave cycle from peak to peak for a given sensor
 def plot_wave_cycle(sensor_name):
