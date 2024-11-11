@@ -17,6 +17,7 @@ class MainWindow:
         self.ui.btn_default_svm.clicked.connect(self.show_default_result)
         self.ui.btn_default_nn.clicked.connect(self.show_default_result)
         self.ui.btn_default_rf.clicked.connect(self.show_default_result)
+        self.ui.btn_page_home.clicked.connect(self.show_first_page)
 
 
     def show(self):
@@ -30,6 +31,8 @@ class MainWindow:
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_algo)
     def show_default_result(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_result)
+    def show_first_page(self):
+        self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_take)
 
 
 if __name__ == '__main__':

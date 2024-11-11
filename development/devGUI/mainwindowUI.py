@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1127, 755)
+        MainWindow.resize(1127, 768)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.stackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
@@ -31,7 +31,7 @@ class Ui_MainWindow(object):
         self.pg_default_take = QtWidgets.QWidget()
         self.pg_default_take.setObjectName("pg_default_take")
         self.btn_default_take = QtWidgets.QPushButton(self.pg_default_take)
-        self.btn_default_take.setGeometry(QtCore.QRect(450, 240, 141, 41))
+        self.btn_default_take.setGeometry(QtCore.QRect(440, 240, 171, 41))
         font = QtGui.QFont()
         font.setPointSize(18)
         self.btn_default_take.setFont(font)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.grph_default_result.setObjectName("grph_default_result")
         self.stackedWidget_2.addWidget(self.pg_default_result)
         self.label = QtWidgets.QLabel(self.pg_default)
-        self.label.setGeometry(QtCore.QRect(500, 10, 101, 31))
+        self.label.setGeometry(QtCore.QRect(490, 10, 131, 31))
         font = QtGui.QFont()
         font.setPointSize(18)
         self.label.setFont(font)
@@ -91,9 +91,12 @@ class Ui_MainWindow(object):
         self.btn_custom = QtWidgets.QPushButton(self.centralwidget)
         self.btn_custom.setGeometry(QtCore.QRect(1030, 690, 75, 23))
         self.btn_custom.setObjectName("btn_custom")
+        self.btn_page_home = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_page_home.setGeometry(QtCore.QRect(530, 690, 93, 28))
+        self.btn_page_home.setObjectName("btn_page_home")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1127, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1127, 26))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -113,6 +116,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "DEFAULT"))
         self.btn_default.setText(_translate("MainWindow", "default"))
         self.btn_custom.setText(_translate("MainWindow", "custom"))
+        self.btn_page_home.setText(_translate("MainWindow", "home"))
 
 
 if __name__ == "__main__":
