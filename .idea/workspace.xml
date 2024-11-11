@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d7b41c0-f6da-419e-b549-97df96441afa" name="Changes" comment="anjir lah">
+    <list default="true" id="0d7b41c0-f6da-419e-b549-97df96441afa" name="Changes" comment="?">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/development/devGUI/MainWindow_start.py" beforeDir="false" afterPath="$PROJECT_DIR$/development/devGUI/MainWindow_start.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,29 +54,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.MainWindow_start.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/AADATAPENTING/ADB/github/ADB-Project",
-    "settings.editor.selected.configurable": "CodeWithMe"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Python.MainWindow_start.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/AADATAPENTING/ADB/github/ADB-Project&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CodeWithMe&quot;
   }
-}]]></component>
-  <component name="QodanaHighlightedReportService">
-    <option name="localRunNotPublishedPersistedInfo">
-      <LocalReportPersistedInfo>
-        <option name="path" value="C:\Users\ILYAZRA\AppData\Local\Temp\qodana_output\qodana.sarif.json" />
-        <option name="reportGuid" value="9c325206-8791-4d8a-8453-c6d409d30226" />
-        <option name="reportName" value="mainwindowUI.py/qodana/2024-11-10" />
-      </LocalReportPersistedInfo>
-    </option>
-  </component>
-  <component name="QodanaIsSelectedPersistenceService">
-    <option name="selectedOrLoading" value="true" />
-  </component>
+}</component>
   <component name="QodanaReportsService">
     <option name="descriptions">
       <ReportDescription localRun="true" path="C:\Users\ILYAZRA\AppData\Local\Temp\qodana_output\qodana.sarif.json" reportGuid="9c325206-8791-4d8a-8453-c6d409d30226" reportId="mainwindowUI.py/qodana/2024-11-10" />
@@ -207,6 +194,7 @@
     <MESSAGE value="p" />
     <MESSAGE value="ah aneh nggk tau" />
     <MESSAGE value="anjir lah" />
-    <option name="LAST_COMMIT_MESSAGE" value="anjir lah" />
+    <MESSAGE value="?" />
+    <option name="LAST_COMMIT_MESSAGE" value="?" />
   </component>
 </project>
