@@ -14,6 +14,9 @@ class MainWindow:
         self.ui.btn_default.clicked.connect(self.show_default)
         self.ui.btn_custom.clicked.connect(self.show_custom)
         self.ui.btn_default_take.clicked.connect(self.show_default_algo)
+        self.ui.btn_default_svm.clicked.connect(self.show_default_result)
+        self.ui.btn_default_nn.clicked.connect(self.show_default_result)
+        self.ui.btn_default_rf.clicked.connect(self.show_default_result)
 
 
     def show(self):
@@ -25,6 +28,9 @@ class MainWindow:
         self.ui.stackedWidget.setCurrentWidget(self.ui.pg_custom)
     def show_default_algo(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_algo)
+    def show_default_result(self):
+        self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_result)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

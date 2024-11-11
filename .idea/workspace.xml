@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d7b41c0-f6da-419e-b549-97df96441afa" name="Changes" comment="ah aneh nggk tau">
+    <list default="true" id="0d7b41c0-f6da-419e-b549-97df96441afa" name="Changes" comment="anjir lah">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/development/devGUI/MainWindow_start.py" beforeDir="false" afterPath="$PROJECT_DIR$/development/devGUI/MainWindow_start.py" afterDir="false" />
     </list>
@@ -168,7 +168,15 @@
       <option name="project" value="LOCAL" />
       <updated>1731239401003</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="anjir lah">
+      <option name="closed" value="true" />
+      <created>1731250236893</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1731250236893</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -198,6 +206,7 @@
     <MESSAGE value="asw" />
     <MESSAGE value="p" />
     <MESSAGE value="ah aneh nggk tau" />
-    <option name="LAST_COMMIT_MESSAGE" value="ah aneh nggk tau" />
+    <MESSAGE value="anjir lah" />
+    <option name="LAST_COMMIT_MESSAGE" value="anjir lah" />
   </component>
 </project>
