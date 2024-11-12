@@ -33,6 +33,7 @@ class MainWindow:
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_result)
     def show_first_page(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_take)
+        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_take_1)
 
 
 if __name__ == '__main__':
