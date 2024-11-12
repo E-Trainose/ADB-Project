@@ -158,8 +158,46 @@
         <height>601</height>
        </rect>
       </property>
-      <widget class="QWidget" name="pg_custom_take_1"/>
-      <widget class="QWidget" name="pg_custom_gauss"/>
+      <widget class="QWidget" name="pg_custom_take_1">
+       <widget class="QPushButton" name="btn_custom_take_1">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>240</y>
+          <width>201</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TAKE DATA</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_gauss">
+       <widget class="QPushButton" name="btn_custom_gauss">
+        <property name="geometry">
+         <rect>
+          <x>470</x>
+          <y>240</y>
+          <width>171</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>GAUSS</string>
+        </property>
+       </widget>
+      </widget>
       <widget class="QWidget" name="pg_custom_feat_select"/>
       <widget class="QWidget" name="pg_custom_model_train"/>
       <widget class="QWidget" name="pg_custom_take_2"/>

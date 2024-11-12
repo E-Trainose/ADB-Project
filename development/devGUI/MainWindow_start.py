@@ -18,6 +18,8 @@ class MainWindow:
         self.ui.btn_default_nn.clicked.connect(self.show_default_result)
         self.ui.btn_default_rf.clicked.connect(self.show_default_result)
         self.ui.btn_page_home.clicked.connect(self.show_first_page)
+        self.ui.btn_custom_take_1.clicked.connect(self.show_custom_gauss)
+        self.ui.btn_custom_gauss.clicked.connect(self.show_custom_algo)
 
 
     def show(self):
@@ -27,6 +29,10 @@ class MainWindow:
         self.ui.stackedWidget.setCurrentWidget(self.ui.pg_default)
     def show_custom(self):
         self.ui.stackedWidget.setCurrentWidget(self.ui.pg_custom)
+    def show_custom_gauss(self):
+        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_gauss)
+    def show_custom_algo(self):
+        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_algo)
     def show_default_algo(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_algo)
     def show_default_result(self):
