@@ -182,7 +182,7 @@
        <widget class="QPushButton" name="btn_custom_gauss">
         <property name="geometry">
          <rect>
-          <x>470</x>
+          <x>450</x>
           <y>240</y>
           <width>171</width>
           <height>71</height>
@@ -198,11 +198,122 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="pg_custom_feat_select"/>
-      <widget class="QWidget" name="pg_custom_model_train"/>
+      <widget class="QWidget" name="pg_custom_feat_select">
+       <widget class="QCheckBox" name="ckbx_custom_skew">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>190</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>skew</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_kurt">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>220</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>kurtosis</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_min">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>250</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>min</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_max">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>280</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>max</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_mean">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>310</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>mean</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_custom_feat_done">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>360</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>done</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_model_train">
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>270</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Train Modei</string>
+        </property>
+       </widget>
+      </widget>
       <widget class="QWidget" name="pg_custom_take_2"/>
       <widget class="QWidget" name="pg_custom_algo"/>
       <widget class="QWidget" name="pg_custom_result"/>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>10</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>CUSTOM</string>
+      </property>
      </widget>
     </widget>
    </widget>

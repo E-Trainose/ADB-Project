@@ -1,4 +1,5 @@
 import sys
+import subprocess
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QMainWindow
 
@@ -19,7 +20,8 @@ class MainWindow:
         self.ui.btn_default_rf.clicked.connect(self.show_default_result)
         self.ui.btn_page_home.clicked.connect(self.show_first_page)
         self.ui.btn_custom_take_1.clicked.connect(self.show_custom_gauss)
-        self.ui.btn_custom_gauss.clicked.connect(self.show_custom_algo)
+        self.ui.btn_custom_gauss.clicked.connect(self.show_custom_feat)
+        self.ui.btn_custom_feat_done.clicked.connect(self.show_custom_algo)
 
 
     def show(self):
@@ -31,8 +33,9 @@ class MainWindow:
         self.ui.stackedWidget.setCurrentWidget(self.ui.pg_custom)
     def show_custom_gauss(self):
         self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_gauss)
-    def show_custom_algo(self):
-        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_algo)
+    def show_custom_feat(self):
+        "subprocess.Popen('python', )"
+        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_feat_select)
     def show_default_algo(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_algo)
     def show_default_result(self):
@@ -40,7 +43,8 @@ class MainWindow:
     def show_first_page(self):
         self.ui.stackedWidget_2.setCurrentWidget(self.ui.pg_default_take)
         self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_take_1)
-
+    def show_custom_algo(self):
+        self.ui.stackedWidget_3.setCurrentWidget(self.ui.pg_custom_model_train)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
