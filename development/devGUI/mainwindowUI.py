@@ -60,11 +60,11 @@ class Ui_MainWindow(object):
         self.stackedWidget_2.addWidget(self.pg_default_algo)
         self.pg_default_result = QtWidgets.QWidget()
         self.pg_default_result.setObjectName("pg_default_result")
-        self.grph_default_result = PlotWidget(self.pg_default_result)
-        self.grph_default_result.setGeometry(QtCore.QRect(110, 20, 821, 401))
-        self.grph_default_result.setMidLineWidth(0)
-        self.grph_default_result.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.grph_default_result.setObjectName("grph_default_result")
+        #self.grph_default_result = PlotWidget(self.pg_default_result)
+        #self.grph_default_result.setGeometry(QtCore.QRect(110, 20, 821, 401))
+        #self.grph_default_result.setMidLineWidth(0)
+        #self.grph_default_result.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        #self.grph_default_result.setObjectName("grph_default_result")
         self.stackedWidget_2.addWidget(self.pg_default_result)
         self.label = QtWidgets.QLabel(self.pg_default)
         self.label.setGeometry(QtCore.QRect(490, 10, 131, 31))
@@ -185,7 +185,7 @@ class Ui_MainWindow(object):
         self.btn_default.setText(_translate("MainWindow", "default"))
         self.btn_custom.setText(_translate("MainWindow", "custom"))
         self.btn_page_home.setText(_translate("MainWindow", "home"))
-from pyqtgraph import PlotWidget
+#from pyqtgraph import PlotWidget
 
 
 if __name__ == "__main__":
