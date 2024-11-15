@@ -1,9 +1,13 @@
 import sys
 import subprocess
-import numpy
-import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+
+#from serial.tools.list_ports import comports
+
+#for com in list(comports()):
+    #print(com.name)
+
 
 from mainwindowUI import Ui_MainWindow
 
@@ -14,7 +18,7 @@ class DataCollectionThread(QThread):
     def run(self):
         try:
             # Run the collect_data_valve.py script
-            subprocess.run([sys.executable, 'collect_data_valve.py'], check=True)
+            subprocess.run([sys.executable, 'collect_data_valve.py', ], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error during data collection: {e}")
         finally:
