@@ -1,13 +1,12 @@
 import sys
 import subprocess
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog, QDialog
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5 import QtSerialPort
+from PyQt5.uic.properties import QtWidgets
 
-#from serial.tools.list_ports import comports
-
-#for com in list(comports()):
-    #print(com.name)
-
+from data_collector import DataCollector
+import serial.tools.list_ports
 
 from mainwindowUI import Ui_MainWindow
 
@@ -15,14 +14,23 @@ from mainwindowUI import Ui_MainWindow
 class DataCollectionThread(QThread):
     finished = pyqtSignal()
 
+    def setPort(self, port : str):
+        self.port = port
+
     def run(self):
         try:
+            print(f"collect from port {self.port}")
+            dCol = DataCollector(port=self.port)
+            dCol.collect(amount=100)
+            dCol.save(filename='file.csv')
+
             # Run the collect_data_valve.py script
-            subprocess.run([sys.executable, 'collect_data_valve.py', ], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error during data collection: {e}")
+        #     subprocess.run([sys.executable, 'collect_data_valve.py', ], check=True)
+        # except subprocess.CalledProcessError as e:
+        #     print(f"Error during data collection: {e}")
         finally:
             self.finished.emit()
+
 
 
 class MainWindow:
@@ -42,6 +50,14 @@ class MainWindow:
         self.ui.btn_custom_take_1.clicked.connect(self.show_custom_gauss)
         self.ui.btn_custom_gauss.clicked.connect(self.show_custom_feat)
         self.ui.btn_custom_feat_done.clicked.connect(self.show_custom_algo)
+
+        self.findPorts()
+
+    def findPorts(self):
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            print(port.name)
+            self.ui.combox_serialport_selector.addItem(port.name)
 
     def show(self):
         self.main_win.show()
@@ -81,7 +97,9 @@ class MainWindow:
         self.progress_dialog.show()
 
         # Start the data collection thread
+        selectedPort = self.ui.combox_serialport_selector.currentText()
         self.data_thread = DataCollectionThread()
+        self.data_thread.setPort(port=selectedPort)
         self.data_thread.finished.connect(self.on_data_collection_finished)
         self.data_thread.start()
 

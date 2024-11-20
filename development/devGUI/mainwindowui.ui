@@ -53,6 +53,16 @@
          <string>TAKE DATA</string>
         </property>
        </widget>
+       <widget class="QComboBox" name="combox_serialport_selector">
+        <property name="geometry">
+         <rect>
+          <x>460</x>
+          <y>160</y>
+          <width>121</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="pg_default_algo">
        <widget class="QPushButton" name="btn_default_nn">
