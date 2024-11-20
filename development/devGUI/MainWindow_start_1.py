@@ -14,28 +14,24 @@ from mainwindowUI import Ui_MainWindow
 class DataCollectionThread(QThread):
     finished = pyqtSignal()
 
-
-
-    def setPort(self, port : str):
+    def setPort(self, port: str):
         self.port = port
 
-    def setAmount(self, amount : int ):
+    def setAmount(self, amount: int):
         self.amount = amount
-
 
     def run(self):
         try:
-            print(f"collect from port {self.port}")
-            dCol = DataCollector(port=self.port)
+            print(f"Collecting from port {self.port} with amount {self.amount}")
+            # Pass the amount parameter when initializing DataCollector
+            dCol = DataCollector(port=self.port, amount=self.amount)
             dCol.collect(amount=self.amount)
             dCol.save(filename='file.csv')
-
-            # Run the collect_data_valve.py script
-        #     subprocess.run([sys.executable, 'collect_data_valve.py', ], check=True)
-        # except subprocess.CalledProcessError as e:
-        #     print(f"Error during data collection: {e}")
+        except Exception as e:
+            print(f"Error during data collection: {e}")
         finally:
             self.finished.emit()
+
 
 
 
@@ -104,9 +100,11 @@ class MainWindow:
         self.progress_dialog.setRange(0, 0)
         self.progress_dialog.show()
 
-        # Start the data collection thread
+        # Retrieve the user input
         selectedPort = self.ui.combox_serialport_selector.currentText()
-        selectAmount = self.ui.inputamount_default_take.value()
+        selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
+
+        # Start the data collection thread
         self.data_thread = DataCollectionThread()
         self.data_thread.setPort(port=selectedPort)
         self.data_thread.setAmount(amount=selectAmount)
