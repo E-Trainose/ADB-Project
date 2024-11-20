@@ -52,7 +52,10 @@ class MainWindow:
         self.ui.btn_custom_take_1.clicked.connect(self.show_custom_gauss)
         self.ui.btn_custom_gauss.clicked.connect(self.show_custom_feat)
         self.ui.btn_custom_feat_done.clicked.connect(self.show_custom_algo)
-
+        self.ui.btn_default_take_next.clicked.connect(self.show_default_algo)
+        self.ui.btn_default_algo_next.clicked.connect(self.show_default_result)
+        self.ui.btn_default_algo_back.clicked.connect(self.show_first_page)
+        self.ui.btn_default_result_back.clicked.connect(self.show_default_algo)
         self.findPorts()
 
     def findPorts(self):
