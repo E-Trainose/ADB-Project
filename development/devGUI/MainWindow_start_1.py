@@ -1,6 +1,6 @@
 import sys
 import subprocess
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog, QDialog, QLineEdit
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5 import QtSerialPort
 from PyQt5.uic.properties import QtWidgets
@@ -14,14 +14,20 @@ from mainwindowUI import Ui_MainWindow
 class DataCollectionThread(QThread):
     finished = pyqtSignal()
 
+
+
     def setPort(self, port : str):
         self.port = port
+
+    def setAmount(self, amount : int ):
+        self.amount = amount
+
 
     def run(self):
         try:
             print(f"collect from port {self.port}")
             dCol = DataCollector(port=self.port)
-            dCol.collect(amount=100)
+            dCol.collect(amount=self.amount)
             dCol.save(filename='file.csv')
 
             # Run the collect_data_valve.py script
@@ -58,6 +64,8 @@ class MainWindow:
         for port in ports:
             print(port.name)
             self.ui.combox_serialport_selector.addItem(port.name)
+
+
 
     def show(self):
         self.main_win.show()
@@ -98,8 +106,10 @@ class MainWindow:
 
         # Start the data collection thread
         selectedPort = self.ui.combox_serialport_selector.currentText()
+        selectAmount = self.ui.inputamount_default_take.displayIntegerBase()
         self.data_thread = DataCollectionThread()
         self.data_thread.setPort(port=selectedPort)
+        self.data_thread.setAmount(amount=selectAmount)
         self.data_thread.finished.connect(self.on_data_collection_finished)
         self.data_thread.start()
 

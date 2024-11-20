@@ -56,11 +56,26 @@
        <widget class="QComboBox" name="combox_serialport_selector">
         <property name="geometry">
          <rect>
-          <x>460</x>
-          <y>160</y>
+          <x>370</x>
+          <y>170</y>
           <width>121</width>
           <height>31</height>
          </rect>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="inputamount_default_take">
+        <property name="geometry">
+         <rect>
+          <x>580</x>
+          <y>170</y>
+          <width>71</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
         </property>
        </widget>
       </widget>
@@ -387,7 +402,7 @@
      <x>0</x>
      <y>0</y>
      <width>1127</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
