@@ -106,7 +106,7 @@ class MainWindow:
 
         # Start the data collection thread
         selectedPort = self.ui.combox_serialport_selector.currentText()
-        selectAmount = self.ui.inputamount_default_take.displayIntegerBase()
+        selectAmount = self.ui.inputamount_default_take.value()
         self.data_thread = DataCollectionThread()
         self.data_thread.setPort(port=selectedPort)
         self.data_thread.setAmount(amount=selectAmount)
