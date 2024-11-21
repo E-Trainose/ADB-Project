@@ -7,6 +7,8 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import joblib
 
+"load -> pre process -> predict -> "
+
 # Load and preprocess data
 file_path = '/home/orin/Downloads/Processed_Sensor_Data.csv'
 data = pd.read_csv(file_path)
