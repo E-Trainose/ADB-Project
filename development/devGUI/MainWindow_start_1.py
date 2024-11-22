@@ -7,7 +7,7 @@ from PyQt5.uic.properties import QtWidgets
 from Tools.i18n.pygettext import getFilesForName
 from matplotlib import style
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-import sip
+# import sip
 from matplotlib.figure import Figure
 import seaborn
 import pandas as pd
