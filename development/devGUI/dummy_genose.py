@@ -1,21 +1,33 @@
 from serial import Serial
 from time import sleep
+from random import randint
 
 
 ser = Serial(port='COM1', baudrate=9600)
-
-datas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-dts = []
-
-for d in datas:
-    dts.append(str(d))
 
 ser.write(b'S\n')
 
 while True:
     try:
+        datas = [
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100),
+            randint(0, 100)
+        ]
+        dts = []
+
+        for d in datas:
+            dts.append(str(d))
+
         ser.write((','.join(dts) + '\n').encode())
 
-        sleep(1)
+        sleep(0.0001)
     except KeyboardInterrupt as e:
         break

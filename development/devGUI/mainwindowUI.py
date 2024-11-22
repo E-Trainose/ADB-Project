@@ -78,6 +78,7 @@ class Ui_MainWindow(object):
         self.stackedWidget_2.addWidget(self.pg_default_algo)
         self.pg_default_result = QtWidgets.QWidget()
         self.pg_default_result.setObjectName("pg_default_result")
+        #graph?
         self.grph_default_result = PlotWidget(self.pg_default_result)
         self.grph_default_result.setGeometry(QtCore.QRect(110, 20, 821, 401))
         self.grph_default_result.setMidLineWidth(0)

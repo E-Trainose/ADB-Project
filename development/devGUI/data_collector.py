@@ -1,5 +1,7 @@
 import serial
 import csv
+import pandas as pd
+import numpy as np
 
 """
 dashboard
@@ -22,6 +24,8 @@ class DataCollector:
 
         self.sensor_values = []
 
+        self.sensor_headers = ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3']
+
         self.initialize()
 
     def initialize(self):
@@ -30,7 +34,7 @@ class DataCollector:
     def reset(self):
         self.sensor_values = []
 
-    def collect(self, amount : int):
+    def collect(self):
         print("Waiting for 'S' command from Arduino to start collecting data...")
 
         # Wait for 'S' command from Arduino to start collecting data
@@ -47,7 +51,7 @@ class DataCollector:
 
         # Counter to track the number of data points saved
         data_count = 0
-        num_of_wave_cycle = amount
+        num_of_wave_cycle = self.amount
         wave_cycle_count = 156
         max_data_count = num_of_wave_cycle * wave_cycle_count  # Maximum number of data entries to collect 2355
 
@@ -62,13 +66,16 @@ class DataCollector:
                     # Convert the sensor values to float or int (use float here)
                     #sensor_values = [float(value) for value in sensor_values]
 
-                    print(sensor_values)  # Optional: Print the data to the console
+                    # print(sensor_values)  # Optional: Print the data to the console
 
                     # # Append the aroma name to the data (this stays a string)
                     # sensor_values.append(aroma_name)
 
                     # # Write the data to the CSV
                     # writer.writerow(sensor_values)
+
+                    sensor_values = [int(i) for i in sensor_values]
+
                     self.sensor_values.append(sensor_values)
 
                     # Increment the counter
@@ -80,12 +87,22 @@ class DataCollector:
             except ValueError:
                 print(f"Error converting data to float: {data}")
 
+    def getDataFrame(self):
+        data = pd.DataFrame()
+        sensor_values_np = np.array(self.sensor_values).transpose()
+        print(f"shape {sensor_values_np.shape}")
+
+        for i in range(0, len(self.sensor_headers)):
+            header = self.sensor_headers[i]
+            value = sensor_values_np[i]
+            data[header] = value
+
+        return data
+
     def save(self, filename : str):
         with open(filename, mode='w', newline='') as file:
             writer = csv.writer(file)
             # Write the header with an additional column for "Aroma"
-            writer.writerow(
-                ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3'])
+            writer.writerow(self.sensor_headers)
 
             writer.writerows(self.sensor_values)
-

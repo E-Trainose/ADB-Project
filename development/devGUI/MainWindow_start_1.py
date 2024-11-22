@@ -1,15 +1,27 @@
 import sys
 import subprocess
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog, QDialog, QLineEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressDialog, QDialog, QLineEdit, QFileDialog
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5 import QtSerialPort
 from PyQt5.uic.properties import QtWidgets
+from Tools.i18n.pygettext import getFilesForName
+from matplotlib import style
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import sip
+from matplotlib.figure import Figure
+import seaborn
+import pandas as pd
+
 
 from data_collector import DataCollector
 import serial.tools.list_ports
 
 from mainwindowUI import Ui_MainWindow
 
+class matplotlibCanvas(FigureCanvas)
+    def __init__(self, parent=None, dpi = 120):
+        fig = figure(dpi = dpi)
+        self.axes = fig.add_subplot
 
 class DataCollectionThread(QThread):
     finished = pyqtSignal()
@@ -64,6 +76,7 @@ class MainWindow:
             print(port.name)
             self.ui.combox_serialport_selector.addItem(port.name)
 
+    def init
 
 
     def show(self):
@@ -119,7 +132,9 @@ class MainWindow:
         self.progress_dialog.close()
         QMessageBox.information(self.main_win, "Data Collection", "Data collection completed successfully!")
 
-
+    def csv_import(self):
+        filePath = QFileDialog.getOpenFileName(filter="csv (*.csv)")[0]
+        pri
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_win = MainWindow()
