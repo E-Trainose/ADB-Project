@@ -63,7 +63,7 @@ predicted_labels = label_encoder.inverse_transform(predicted_classes.numpy())
 data['PREDICTED_LABEL'] = predicted_labels
 
 # Save the predictions to a new file
-output_file = '/home/orin/Documents/prediction_result.csv'
+output_file = '/home/orin/Documents/nn_prediction_result.csv'
 data.to_csv(output_file, index=False)
 
 print(f"Predictions saved to '{output_file}'")
