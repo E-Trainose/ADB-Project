@@ -18,9 +18,9 @@ import serial.tools.list_ports
 
 from mainwindowUI import Ui_MainWindow
 
-class matplotlibCanvas(FigureCanvas)
+class matplotlibCanvas(FigureCanvas):
     def __init__(self, parent=None, dpi = 120):
-        fig = figure(dpi = dpi)
+        fig = Figure(dpi = dpi)
         self.axes = fig.add_subplot
 
 class DataCollectionThread(QThread):
@@ -76,7 +76,7 @@ class MainWindow:
             print(port.name)
             self.ui.combox_serialport_selector.addItem(port.name)
 
-    def init
+
 
 
     def show(self):
@@ -134,7 +134,7 @@ class MainWindow:
 
     def csv_import(self):
         filePath = QFileDialog.getOpenFileName(filter="csv (*.csv)")[0]
-        pri
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_win = MainWindow()
