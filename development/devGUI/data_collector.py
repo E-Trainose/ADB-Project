@@ -85,6 +85,7 @@ class DataCollector:
             writer = csv.writer(file)
             # Write the header with an additional column for "Aroma"
             writer.writerow(
-                ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3', 'AROMA'])
+                ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3'])
 
             writer.writerows(self.sensor_values)
+
