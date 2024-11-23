@@ -186,9 +186,8 @@ class MainWindow:
         self.ui.btn_custom.clicked.connect(self.show_custom)
         self.ui.btn_default_take.clicked.connect(self.collect_data_with_loading)
         self.ui.btn_default_svm.clicked.connect(self.svm_model_predict_with_loading)
-        self.ui.btn_default_svm.clicked.connect(self.show_default_result)
-        self.ui.btn_default_nn.clicked.connect(self.show_default_result)
-        self.ui.btn_default_rf.clicked.connect(self.show_default_result)
+        self.ui.btn_default_nn.clicked.connect(self.nn_model_predict_with_loading)
+        self.ui.btn_default_rf.clicked.connect(self.rf_model_predict_with_loading)
         self.ui.btn_page_home.clicked.connect(self.show_first_page)
         self.ui.btn_custom_take_1.clicked.connect(self.show_custom_gauss)
         self.ui.btn_custom_gauss.clicked.connect(self.show_custom_feat)
@@ -258,6 +257,15 @@ class MainWindow:
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
 
     def svm_model_predict_with_loading(self):
+        self.model_predict_with_loading(model_id=AI_MODEL_DICT['SVM'])
+    
+    def nn_model_predict_with_loading(self):
+        self.model_predict_with_loading(model_id=AI_MODEL_DICT['NN'])
+
+    def rf_model_predict_with_loading(self):
+        self.model_predict_with_loading(model_id=AI_MODEL_DICT['RF'])
+
+    def model_predict_with_loading(self, model_id):
         # Create and configure the progress dialog
         self.progress_dialog = QProgressDialog("Predicting...", None, 0, 0, self.main_win)
         self.progress_dialog.setWindowTitle("Please Wait")
@@ -265,8 +273,6 @@ class MainWindow:
         self.progress_dialog.setCancelButton(None)
         self.progress_dialog.setRange(0, 0)
         self.progress_dialog.show()
-
-        model_id = AI_MODEL_DICT["SVM"]
 
         self.genose.setAIModel(model_id)
         self.genose.startPredict()

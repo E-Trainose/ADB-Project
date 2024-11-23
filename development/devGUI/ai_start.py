@@ -13,12 +13,12 @@ class AiStarter:
     def __init__(self):
         pass
 
-# class BaseClassifier:
-#     def __init__(self):
-#         pass
-#
-#     def predict(self):
-#         pass
+class BaseClassifier:
+    def __init__(self):
+        pass
+
+    def predict(self):
+        pass
 
 # Define the neural network class (same as in training)
 class TunedSensorClassifier(nn.Module):
@@ -41,8 +41,9 @@ class TunedSensorClassifier(nn.Module):
         x = self.fc4(x)
         return x
 
-class NNClassifier:
+class NNClassifier(BaseClassifier):
     def __init__(self):
+        super(NNClassifier, self).__init__()
         self.model = None
         self.model_path = None
         self.label_encoder = None
@@ -51,11 +52,6 @@ class NNClassifier:
         # Load the saved model and label encoder
         self.model_path = model_path
         self.label_encoder = joblib.load(label_encoder_path)
-
-    def loadDataFromFile(self, file_path):
-        # Load new data for testing
-        data = pd.read_csv(file_path)
-        return data
 
     def predict(self, data):
         # Ensure the feature columns align with the trained model
@@ -83,8 +79,9 @@ class NNClassifier:
 
         return predicted_labels
 
-class SVMClassifier:
+class SVMClassifier(BaseClassifier):
     def __init__(self):
+        super(SVMClassifier, self).__init__()
         self.svm_model = None
         self.label_encoder = None
 
@@ -92,16 +89,9 @@ class SVMClassifier:
         self.svm_model = joblib.load(model_path)
         self.label_encoder = joblib.load(label_encoder_path)
 
-    def loadDataFromFile(self, file_path):
-        # Load new unsupervised data
-        data = pd.read_csv(file_path)
-
-        return data
-
     def predict(self, data):
         # Ensure the feature columns align with the trained model
         X_new = data.drop(columns=['LABEL']) if 'LABEL' in data.columns else data
-
 
         # Perform predictions
         predicted_classes = self.svm_model.predict(X_new)
@@ -112,8 +102,9 @@ class SVMClassifier:
 
         return predicted_labels
 
-class RFClassifier:
+class RFClassifier(BaseClassifier):
     def __init__(self):
+        super(RFClassifier, self).__init__()
         self.rf_model = None
         self.label_encoder = None
 
@@ -121,15 +112,10 @@ class RFClassifier:
         self.rf_model=joblib.load(model_path)
         self.label_encoder = joblib.load(label_encoder_path)
 
-    def loadDataFromFile(self, file_path):
-        data = pd.read_csv(file_path)
-
-        return data
-
     def predict(self, data):
         X_new = data.drop(columns=['LABEL']) if 'LABEL' in data.columns else data
         predicted_classes = self.rf_model.predict(X_new)
-        predicted_labels = self.label_encoder.predict.inverse_transform(predicted_classes)
+        predicted_labels = self.label_encoder.inverse_transform(predicted_classes)
 
         return predicted_labels
 
