@@ -1,0 +1,7 @@
+WORKING_DIR_PATH        = "D:/Data Andra/Project/ADB/ADB-Project/development/devGUI"
+NN_MODEL_PATH           = WORKING_DIR_PATH + "/model/nn/nn_model.pth"
+NN_LABEL_ENCODER_PATH   = WORKING_DIR_PATH + "/model/nn/label_encoder_nn.pkl"
+SVM_MODEL_PATH          = WORKING_DIR_PATH + "/model/svm/svm_model.pkl"
+SVM_LABEL_ENCODER_PATH  = WORKING_DIR_PATH + "/model/svm/label_encoder_svm.pkl"
+RF_MODEL_PATH           = WORKING_DIR_PATH + "/model/rf/random_forest_model.pkl"
+RF_LABEL_ENCODER_PATH   = WORKING_DIR_PATH + "/model/rf/label_encoder_rf.pkl"

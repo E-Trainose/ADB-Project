@@ -28,6 +28,6 @@ while True:
 
         ser.write((','.join(dts) + '\n').encode())
 
-        sleep(0.0001)
+        sleep(0.001)
     except KeyboardInterrupt as e:
         break

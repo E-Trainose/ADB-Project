@@ -47,11 +47,6 @@ class NNClassifier:
         self.model_path = None
         self.label_encoder = None
 
-        self.load(
-            model_path="./model/nn/nn_model.pth",
-            label_encoder_path="./model/nn/label_encoder_nn.pkl"
-        )
-
     def load(self, model_path, label_encoder_path):
         # Load the saved model and label encoder
         self.model_path = model_path
@@ -93,11 +88,6 @@ class SVMClassifier:
         self.svm_model = None
         self.label_encoder = None
 
-        self.load(
-            model_path="./model/svm/svm_model.pkl",
-            label_encoder_path="./model/svm/label_encoder_svm.pkl"
-        )
-
     def load(self, model_path, label_encoder_path):
         self.svm_model = joblib.load(model_path)
         self.label_encoder = joblib.load(label_encoder_path)
@@ -126,11 +116,6 @@ class RFClassifier:
     def __init__(self):
         self.rf_model = None
         self.label_encoder = None
-
-        self.load(
-            model_path="./model/rf/random_forest_model.pkl",
-            label_encoder_path = "./model/rf/label_encoder_rf.pkl"
-        )
 
     def load(self, model_path, label_encoder_path):
         self.rf_model=joblib.load(model_path)

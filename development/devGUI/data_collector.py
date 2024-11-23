@@ -16,7 +16,7 @@ take data sample:
 """
 
 class DataCollector:
-    def __init__(self, port : str, amount : int):
+    def __init__(self, port : str = "", amount : int = 0):
         self.port = port
         self.baudrate = 9600
         self.timeout = 1
@@ -25,8 +25,6 @@ class DataCollector:
         self.sensor_values = []
 
         self.sensor_headers = ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3']
-
-        self.initialize()
 
     def initialize(self):
         self.serial = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
@@ -62,17 +60,6 @@ class DataCollector:
                 if data and data != 'S':
                     # Split the data into a list of strings
                     sensor_values = data.split(',')
-
-                    # Convert the sensor values to float or int (use float here)
-                    #sensor_values = [float(value) for value in sensor_values]
-
-                    # print(sensor_values)  # Optional: Print the data to the console
-
-                    # # Append the aroma name to the data (this stays a string)
-                    # sensor_values.append(aroma_name)
-
-                    # # Write the data to the CSV
-                    # writer.writerow(sensor_values)
 
                     sensor_values = [int(i) for i in sensor_values]
 
