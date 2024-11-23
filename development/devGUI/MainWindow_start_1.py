@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from random import randint
 
-from ai_start import NNClassifier, SVMClassifier, RFClassifier
+from ai_start import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier
 from data_collector import DataCollector
 import serial.tools.list_ports
 import config
@@ -158,7 +158,7 @@ class DataCollectionThread(QThread):
 class PredictionThread(QThread):
     finished = pyqtSignal(np.ndarray)
 
-    def setAIModel(self, model):
+    def setAIModel(self, model : BaseClassifier):
         self.model = model
 
     def setDatas(self, datas : pd.DataFrame):
@@ -202,6 +202,8 @@ class MainWindow:
         self.genose = Genose()
         self.genose.data_collection_finished.connect(self.on_data_collection_finished)
         self.genose.predict_finished.connect(self.on_prediction_finished)
+
+        self.ui.grph_default_result.plotItem.plot([-100, 10, 20])
 
     def findPorts(self):
         ports = serial.tools.list_ports.comports()
@@ -317,7 +319,10 @@ class MainWindow:
             pen.setColor(sensor_colors[sensor_key])
             
             self.ui.grph_default_result.plotItem.addItem(
-                PlotDataItem(y=sensor_data, pen=pen)
+                PlotDataItem(
+                    y=sensor_data, 
+                    pen=pen
+                )
             )
 
 if __name__ == '__main__':

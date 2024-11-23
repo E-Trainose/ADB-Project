@@ -10,16 +10,16 @@ ser.write(b'S\n')
 while True:
     try:
         datas = [
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100),
-            randint(0, 100)
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100),
+            randint(2000, 5100)
         ]
         dts = []
 

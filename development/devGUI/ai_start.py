@@ -17,7 +17,7 @@ class BaseClassifier:
     def __init__(self):
         pass
 
-    def predict(self):
+    def predict(self, datas : pd.DataFrame):
         pass
 
 # Define the neural network class (same as in training)
