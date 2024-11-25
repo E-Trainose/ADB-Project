@@ -2,6 +2,7 @@ import serial
 import csv
 import pandas as pd
 import numpy as np
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
 
 """
 dashboard
@@ -93,3 +94,33 @@ class DataCollector:
             writer.writerow(self.sensor_headers)
 
             writer.writerows(self.sensor_values)
+
+
+
+class DataCollectionThread(QThread):
+    finished = pyqtSignal(pd.DataFrame)
+
+    def setPort(self, port: str):
+        self.port = port
+
+    def setAmount(self, amount: int):
+        self.amount = amount
+
+    def run(self):
+        try:
+            print(f"Collecting from port {self.port} with amount {self.amount}")
+            # Pass the amount parameter when initializing DataCollector
+            self.data_collector = DataCollector(port=self.port, amount=self.amount)
+            self.data_collector.initialize()
+            self.data_collector.collect()
+            # self.data_collector.save(filename='file.csv')
+            datas = self.data_collector.getDataFrame()
+
+        except FileNotFoundError as e:
+            print(f"cant access port {self.port}")
+
+        except Exception as e:
+            print(f"Error during data collection: {e}")
+
+        finally:
+            self.finished.emit(datas)

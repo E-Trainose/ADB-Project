@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1127</width>
+    <height>768</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>19</x>
+      <y>9</y>
+      <width>1091</width>
+      <height>671</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="pg_home"/>
+    <widget class="QWidget" name="pg_default">
+     <widget class="QStackedWidget" name="stackedWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>1051</width>
+        <height>581</height>
+       </rect>
+      </property>
+      <widget class="QWidget" name="pg_default_take">
+       <widget class="QPushButton" name="btn_default_take">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>240</y>
+          <width>171</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TAKE DATA</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="combox_serialport_selector">
+        <property name="geometry">
+         <rect>
+          <x>370</x>
+          <y>170</y>
+          <width>121</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="inputamount_default_take">
+        <property name="geometry">
+         <rect>
+          <x>580</x>
+          <y>170</y>
+          <width>71</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_default_take_next">
+        <property name="geometry">
+         <rect>
+          <x>940</x>
+          <y>540</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>next</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_default_algo">
+       <widget class="QPushButton" name="btn_default_nn">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>140</y>
+          <width>201</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>NN</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_default_svm">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>230</y>
+          <width>201</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>SVM</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_default_rf">
+        <property name="geometry">
+         <rect>
+          <x>440</x>
+          <y>310</y>
+          <width>201</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Random Forest</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_default_algo_next">
+        <property name="geometry">
+         <rect>
+          <x>940</x>
+          <y>540</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>next</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_default_algo_back">
+        <property name="geometry">
+         <rect>
+          <x>860</x>
+          <y>540</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>back</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_default_result">
+       <widget class="QPushButton" name="btn_default_result_back">
+        <property name="geometry">
+         <rect>
+          <x>950</x>
+          <y>540</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>back</string>
+        </property>
+       </widget>
+       <widget class="QWidget" name="grph_default_result" native="true">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>50</y>
+          <width>871</width>
+          <height>451</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>10</y>
+        <width>131</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>DEFAULT</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pg_custom">
+     <widget class="QStackedWidget" name="stackedWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>40</y>
+        <width>1031</width>
+        <height>601</height>
+       </rect>
+      </property>
+      <widget class="QWidget" name="pg_custom_take_1">
+       <widget class="QPushButton" name="btn_custom_take_1">
+        <property name="geometry">
+         <rect>
+          <x>450</x>
+          <y>230</y>
+          <width>201</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TAKE DATA</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_gauss">
+       <widget class="QPushButton" name="btn_custom_gauss">
+        <property name="geometry">
+         <rect>
+          <x>450</x>
+          <y>240</y>
+          <width>171</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>GAUSS</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_feat_select">
+       <widget class="QCheckBox" name="ckbx_custom_skew">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>190</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>skew</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_kurt">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>220</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>kurtosis</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_min">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>250</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>min</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_max">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>280</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>max</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="ckbx_custom_mean">
+        <property name="geometry">
+         <rect>
+          <x>490</x>
+          <y>310</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>mean</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btn_custom_feat_done">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>360</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>done</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_model_train">
+       <widget class="QPushButton" name="btn_custom_train">
+        <property name="geometry">
+         <rect>
+          <x>480</x>
+          <y>270</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Train Modei</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_take_2">
+       <widget class="QPushButton" name="btn_custom_take_2">
+        <property name="geometry">
+         <rect>
+          <x>500</x>
+          <y>260</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>take data</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pg_custom_algo"/>
+      <widget class="QWidget" name="pg_custom_result"/>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>10</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>CUSTOM</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="btn_default">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>690</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>default</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_custom">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>690</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>custom</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_page_home">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>690</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>home</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1127</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

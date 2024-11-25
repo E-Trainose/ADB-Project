@@ -1,5 +1,5 @@
 from data_collector import DataCollector
-from ai_start import NNClassifier, SVMClassifier, RFClassifier
+from development.devGUI.classifier import NNClassifier, SVMClassifier, RFClassifier
 from scipy.stats import skew, kurtosis
 import pandas as pd
 

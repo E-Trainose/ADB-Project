@@ -1,4 +1,4 @@
-from ai_start import NNClassifier, SVMClassifier, RFClassifier
+from development.devGUI.classifier import NNClassifier, SVMClassifier, RFClassifier
 import pandas as pd
 import config
 
