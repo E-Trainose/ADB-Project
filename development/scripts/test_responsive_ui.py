@@ -111,6 +111,10 @@ class MainWindow(QMainWindow):
             self.header = self.createButton("Header", self.fonts[1], "#FA6FC3")
             layout = QVBoxLayout(self.widget_5)
             layout.addWidget(self.header)
+
+            self.footer = self.createButton("Footer", self.fonts[1], "#FA6FC3")
+            layout = QVBoxLayout(self.widget_7)
+            layout.addWidget(self.footer)
         
         self.selectDefaultButton.clicked.connect(add)
         
