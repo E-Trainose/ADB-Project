@@ -17,8 +17,6 @@ class ResizedLogoLabel(QLabel):
                 size.width(),   
                 aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio
             )
-            print(int(size.height()))
-            print(size.height(), size.width())
             self.setPixmap(logo_pixmap)
 
         return super().resizeEvent(a0)
@@ -43,8 +41,6 @@ class PicButton(QAbstractButton):
         dh = rect.height() / pxsize.height()
         dw = rect.width() / pxsize.width()
 
-        print(dh, dw)
-
         scale = min([dh, dw])
 
         pxsize = QSize(int(pxsize.width() * scale ), int(pxsize.height() * scale))
@@ -64,9 +60,12 @@ class PicButton(QAbstractButton):
         return self.normal_pixmap.size()
     
 class AutoFontButton(QPushButton):
+    def setScalePoint(self, point):
+        self.scalePoint = point
+
     def resizeEvent(self, a0):
         new_font = self.font()
-        new_font.setPointSizeF(a0.size().width() / 10.0)
+        new_font.setPointSizeF(a0.size().width() / self.scalePoint)
         self.setFont(new_font)
         return super().resizeEvent(a0)
 
@@ -91,33 +90,24 @@ class MainWindow(QMainWindow):
 
         self.fonts = [font1, font2, font3]
 
+        self.stackedWidget.setCurrentIndex(0)
+        self.currentScreen = "launch"
+
         self.setupLaunchScreen()
-        self.setupHomeScreen()
+        self.setupAppScreen()
 
     def setupLaunchScreen(self):
-        self.startButton = self.createButton("START", self.fonts[1], "#FA6FC3")
-        self.startButton.clicked.connect(lambda : self.changePage(1))
+        self.startButton = self.createButton("START", self.fonts[1], "#FA6FC3", 12)
+        self.startButton.clicked.connect(lambda : self.navToApp())
         self.startButtonVBox.addWidget(self.startButton)
 
-    def changePage(self, idx):
+    def navToApp(self):
         pages : QStackedWidget = self.stackedWidget
-        pages.setCurrentIndex(idx)
-
-    def setupHomeScreen(self):
-        self.selectDefaultButton = self.createButton("DEFAULT", self.fonts[1], "#537EFF")
-        self.selectCustomButton = self.createButton("CUSTOM", self.fonts[1], "#FA6FC3")
-
-        def add():
-            self.header = self.createButton("Header", self.fonts[1], "#FA6FC3")
-            layout = QVBoxLayout(self.widget_5)
-            layout.addWidget(self.header)
-
-            self.footer = self.createButton("Footer", self.fonts[1], "#FA6FC3")
-            layout = QVBoxLayout(self.widget_7)
-            layout.addWidget(self.footer)
+        pages.setCurrentIndex(1)
         
-        self.selectDefaultButton.clicked.connect(add)
-        
+        self.changeContent("home")
+
+    def setupAppScreen(self):
         logo_pixmap = QPixmap("development/resources/etrainose_logo.png")
         self.logoHeader = ResizedLogoLabel()
         self.logoHeader.setSourcePixmap(logo_pixmap)
@@ -131,10 +121,6 @@ class MainWindow(QMainWindow):
         self.verticalSpacer = QSpacerItem(100, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         layout.addItem(self.verticalSpacer)
 
-        layout = QVBoxLayout(self.widget_3)
-        layout.addWidget(self.selectDefaultButton)
-        layout.addWidget(self.selectCustomButton)
-
         layout = QHBoxLayout(self.widget)
         layout.addWidget(self.homeButton)
         self.verticalSpacer1 = QSpacerItem(100, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -145,6 +131,64 @@ class MainWindow(QMainWindow):
         layout.addItem(self.verticalSpacer2)
         layout.addWidget(self.infoButton)
 
+        self.contentLayout = QVBoxLayout(self.widget_3)
+
+    def showHeader(self, text):
+        self.header = self.createButton(text, self.fonts[1], "#FA6FC3")
+        layout = QVBoxLayout(self.widget_5)
+        layout.addWidget(self.header)
+
+    def hideHeader(self, text):
+        self.header.deleteLater()
+    
+    def showFooter(self, text):
+        self.footer = self.createButton(text, self.fonts[1], "#FA6FC3")
+        layout = QVBoxLayout(self.widget_7)
+        layout.addWidget(self.footer)
+
+    def hideFooter(self, text):
+        self.footer.deleteLater()
+
+    def showHomeContent(self):
+        self.currentScreen = "home"
+
+        self.selectDefaultButton = self.createButton("DEFAULT", self.fonts[1], "#537EFF", 15)
+        self.selectCustomButton = self.createButton("CUSTOM", self.fonts[1], "#FA6FC3", 15)
+        
+        self.selectDefaultButton.clicked.connect(lambda : self.changeContent('def_take_sample'))
+
+        self.contentLayout.addWidget(self.selectDefaultButton)
+        self.contentLayout.addWidget(self.selectCustomButton)
+    
+    def hideHomeContent(self):
+        self.selectDefaultButton.deleteLater()
+        self.selectCustomButton.deleteLater()
+    
+    def showDefaultTakeSampleContent(self):
+        self.takeDataSampleButton = self.createButton("TAKE DATA SAMPLE", self.fonts[1], "#537EFF", 30)
+
+        self.contentLayout.addWidget(self.takeDataSampleButton)
+
+        self.showHeader("DEFAULT")
+
+    def hideDefaultTakeSampleContent(self):
+        self.takeDataSampleButton.deleteLater()
+
+    def changeContent(self, dest):
+        cur = self.currentScreen
+
+        #cleanup last content
+        if(cur == "home"):
+            self.hideHomeContent()    
+        elif(cur == "def_take_sample"):
+            self.hideDefaultTakeSampleContent()
+
+        #show new content
+        if(dest == "home"):
+            self.showHomeContent()    
+        elif(dest == "def_take_sample"):
+            self.showDefaultTakeSampleContent()
+
     def resizeEvent(self, a0):
         w = a0.size().width()
         self.verticalSpacer.changeSize(int(w/5), 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -152,10 +196,11 @@ class MainWindow(QMainWindow):
         self.verticalSpacer2.changeSize(int(w/5), 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         return super().resizeEvent(a0)
 
-    def createButton(self, text : str, font_idx : int, color_hex : str) -> AutoFontButton:
+    def createButton(self, text : str, font_idx : int, color_hex : str, scale_point = 20.0) -> AutoFontButton:
         color = color_hex
         button_font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
         button = AutoFontButton(text, self)
+        button.setScalePoint(scale_point)
         
         stylesheet = '''
             QPushButton {{
