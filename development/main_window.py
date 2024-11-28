@@ -1,10 +1,11 @@
-import sys
+import sys, os
 from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase
 import serial.tools.list_ports
 from graph_canvas import GraphCanvas
 import PyQt5.sip as sip
+import config
 
 WIDTH = 1280
 HEIGHT = 720
@@ -88,9 +89,9 @@ class MainWindow(QMainWindow):
         self.startButton.clicked.connect(lambda : self.goToApp())
         self.resized.connect(lambda: self.startButton.setGeometry(px(40), py(80), px(20), py(10)))
 
-        logo_pixmap = QPixmap("development/resources/etrainose_logo.png")
-        home_pixmap = QPixmap("development/resources/home_icon.png")
-        about_pixmap = QPixmap("development/resources/about_icon.png")
+        logo_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/etrainose_logo.png")
+        home_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/home_icon.png")
+        about_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/about_icon.png")
 
         self.launchLogo = ResizedLogoLabel(self.launchPage)
         self.launchLogo.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -263,11 +264,15 @@ class MainWindow(QMainWindow):
             self.showDefaultPredictionResultContent()
 
     def loadFonts(self):
-        font1 = QFontDatabase.addApplicationFont('development/resources/Montserrat/static/Montserrat-Thin.ttf') 
-        font2 = QFontDatabase.addApplicationFont('development/resources/Montserrat/static/Montserrat-ExtraBold.ttf') 
-        font3 = QFontDatabase.addApplicationFont('development/resources/Montserrat/static/Montserrat-SemiBold.ttf')
+        print(os.path.dirname(__file__) )
+        font1 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-Thin.ttf') 
+        font2 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-ExtraBold.ttf') 
+        font3 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-SemiBold.ttf')
 
+        print(font1)
         self.fonts = [font1, font2, font3]
+        
+        print(QFontDatabase.applicationFontFamilies(font1))
 
     def updateGeometries(self, a0):
         global WIDTH, HEIGHT, WX, HX
