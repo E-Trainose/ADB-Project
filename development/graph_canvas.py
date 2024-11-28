@@ -12,13 +12,21 @@ class GraphCanvas(FigureCanvas):
         super().__init__(self.fig)
         self.setParent(parent)
 
-    # def update_plot(self, plot_datas):
-    #     self.x = np.linspace(0, 10, len(plot_datas))
-    #     self.y = np.sin(self.x)
-    #     self.line, = self.ax.plot(self.x, self.y)
+    # def resize(self, w, h):
+    #     self.fig.set_figwidth(w)
+    #     self.fig.set_figheight(h)
+    
+    def update_plot_(self, plot_datas):
+        self.x = np.linspace(0, 10, len(plot_datas))
+        self.y = np.sin(self.x)
+        self.line, = self.ax.plot(self.x, self.y)
 
     #     self.ax.draw_artist(self.line)
     #     self.fig.canvas.draw()
+
+    # def resizeEvent(self, event):
+    #     print("resized")
+    #     return super().resizeEvent(event)
 
     def update_plot(self, plot_datas : pd.DataFrame):
         sensor_colors = {

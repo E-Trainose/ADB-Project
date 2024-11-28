@@ -1,7 +1,10 @@
 import sys
 from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase
+import serial.tools.list_ports
+from graph_canvas import GraphCanvas
+import PyQt5.sip as sip
 
 WIDTH = 1280
 HEIGHT = 720
@@ -58,6 +61,8 @@ class AutoFontLabel(QLabel):
 
 class MainWindow(QMainWindow):
     resized = pyqtSignal()
+    take_data_sig = pyqtSignal()
+    model_select_sig = pyqtSignal(str)
 
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
@@ -133,23 +138,30 @@ class MainWindow(QMainWindow):
 
     def goToLaunch(self):
         self.pages.setCurrentIndex(0)
+        self.changeContent("home")
+        self.currentScreen = "launch"
 
     def showHeader(self, text):
         self.header = self.createLabel(text, self.fonts[1], "#FA6FC3", self)
-        self.resized.connect(self.header.__onResize)
 
         self.headerVbox.addWidget(self.header)
 
     def hideHeader(self):
-        self.resized.disconnect(self.header.__onResize)
-        self.header.deleteLater()
+        try:
+            self.deleteLabel(self.header)
+        except AttributeError as e:
+            print(e)
     
     def showFooter(self, text):
         self.footer = self.createLabel(text, self.fonts[1], "#FA6FC3", self)
-        self.footerVBox.addWidget(self.footer)
+        
+        self.footerVbox.addWidget(self.footer)
 
     def hideFooter(self):
-        self.footer.deleteLater()
+        try:
+            self.deleteLabel(self.footer)
+        except AttributeError as e:
+            print(e)
 
     def showHomeContent(self):
         self.currentScreen = "home"
@@ -160,26 +172,42 @@ class MainWindow(QMainWindow):
 
     def hideHomeContent(self):
         self.deleteContentButton(self.defaultButton)
+
+    def findPorts(self):
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            self.comboxPortSelector.addItem(port.name)
     
     def showDefaultTakeSampleContent(self):
         self.currentScreen = "def-take-sample"
-        self.takeDataButton = self.createContentButton("TAKE DATA SAMPLE", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(30, 20))
+        self.takeDataButton = self.createContentButton("TAKE DATA SAMPLE", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(30, 10))
         self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
+        # self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
+
+        self.comboxPortSelector = QComboBox()
+        self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
+        self.findPorts()
 
         self.showHeader("DEFAULT")
 
         self.contentVbox.addWidget(self.takeDataButton)
+        self.contentVbox.addWidget(self.comboxPortSelector)
 
     def hideDefaultTakeSampleContent(self):
         self.deleteContentButton(self.takeDataButton)
+        self.comboxPortSelector.deleteLater()
 
     def showDefaultModelSelectionContent(self):
         self.currentScreen = "def-model-selection"
         self.svmButton = self.createContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.svmButton.clicked.connect(lambda : self.changeContent("def-prediction-result"))
+        # self.svmButton.clicked.connect(lambda : self.model_select_sig.emit("svm"))
 
         self.rfButton = self.createContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.rfButton.clicked.connect(lambda : self.model_select_sig.emit("rf"))
 
         self.nnButton = self.createContentButton("NN", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.nnButton.clicked.connect(lambda : self.model_select_sig.emit("nn"))
 
         self.contentVbox.addWidget(self.svmButton)
         self.contentVbox.addWidget(self.rfButton)
@@ -189,6 +217,23 @@ class MainWindow(QMainWindow):
         self.deleteContentButton(self.svmButton)
         self.deleteContentButton(self.rfButton)
         self.deleteContentButton(self.nnButton)
+
+    def showDefaultPredictionResultContent(self):
+        self.currentScreen = "def-prediction-result"
+        # self.resultLabel = self.createLabel("PREDICTION RESULT", self.fonts[1], "gray", self.appPage)
+        self.graph_canvas = GraphCanvas(self.appPage)
+        self.graph_canvas.update_plot_([0,1,2,3,4,5])
+        # self.graph_canvas.resize()
+
+        self.contentVbox.addWidget(self.graph_canvas)
+
+        self.showFooter("PREDICTION RESULT")
+    
+    def hideDefaultPredictionResultContent(self):
+        print("deleted")
+        self.graph_canvas.deleteLater()
+        self.hideFooter()
+        # self.deleteLabel(self.resultLabel)
 
     def changeContent(self, dest):
         cur = self.currentScreen
@@ -200,21 +245,22 @@ class MainWindow(QMainWindow):
             self.hideDefaultTakeSampleContent()
         elif(cur == "def-model-selection"):
             self.hideDefaultModelSelectionContent()
+        elif(cur == "def-prediction-result"):
+            self.hideDefaultPredictionResultContent()
 
         #show new content
         if(dest == "home"):
             self.showHomeContent()
 
-            try:
-                self.hideHeader()
-                self.hideFooter()
-            except AttributeError as e:
-                print(e)
+            self.hideHeader()
+            self.hideFooter()
 
         elif(dest == "def-take-sample"):
             self.showDefaultTakeSampleContent()
         elif(dest == "def-model-selection"):
             self.showDefaultModelSelectionContent()
+        elif(dest == "def-prediction-result"):
+            self.showDefaultPredictionResultContent()
 
     def loadFonts(self):
         font1 = QFontDatabase.addApplicationFont('development/resources/Montserrat/static/Montserrat-Thin.ttf') 
@@ -315,10 +361,18 @@ class MainWindow(QMainWindow):
         label.setSizePolicy(sp)
 
         label.__onResize = lambda: label.setMinimumSize(px(5), py(5))
-        
         label.__onResize()
 
+        self.resized.connect(label.__onResize)
+
         return label
+    
+    def deleteLabel(self, label : AutoFontLabel):
+        try:
+            self.resized.disconnect(label.__onResize)
+            label.deleteLater()
+        except AttributeError as e:
+            print("WARNING : ", e)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
