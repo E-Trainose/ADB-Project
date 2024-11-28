@@ -41,6 +41,6 @@ while True:
 
         ser.write((','.join(dts) + '\n').encode())
 
-        sleep(0.001)
+        sleep(0.01)
     except KeyboardInterrupt as e:
         break

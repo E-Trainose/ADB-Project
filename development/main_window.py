@@ -1,11 +1,13 @@
 import sys, os
 from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox
-from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar
+from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase, QColor, QPen
+from pyqtgraph import PlotDataItem, PlotWidget
 import serial.tools.list_ports
-from graph_canvas import GraphCanvas
+# from graph_canvas import GraphCanvas
 import PyQt5.sip as sip
 import config
+import pandas as pd
 
 WIDTH = 1280
 HEIGHT = 720
@@ -194,9 +196,31 @@ class MainWindow(QMainWindow):
         self.contentVbox.addWidget(self.takeDataButton)
         self.contentVbox.addWidget(self.comboxPortSelector)
 
+        self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.pbar = QProgressBar(self)
+        sp = self.pbar.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        self.pbar.setSizePolicy(sp)
+        self.pbar.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.pbar.setValue(0)
+
+        self.barHbox = QHBoxLayout()
+
+        self.barHbox.addItem(self.spacer1)
+        self.barHbox.addWidget(self.pbar)
+        self.barHbox.addItem(self.spacer2)
+
+        self.contentVbox.addLayout(self.barHbox)
+
     def hideDefaultTakeSampleContent(self):
+        self.barHbox.removeItem(self.spacer1)
+        self.barHbox.removeItem(self.spacer2)
         self.deleteContentButton(self.takeDataButton)
         self.comboxPortSelector.deleteLater()
+        self.pbar.deleteLater()
+        self.barHbox.deleteLater()
 
     def showDefaultModelSelectionContent(self):
         self.currentScreen = "def-model-selection"
@@ -222,20 +246,54 @@ class MainWindow(QMainWindow):
     def showDefaultPredictionResultContent(self):
         self.currentScreen = "def-prediction-result"
         # self.resultLabel = self.createLabel("PREDICTION RESULT", self.fonts[1], "gray", self.appPage)
-        self.graph_canvas = GraphCanvas(self.appPage)
-        self.graph_canvas.fig.set_figwidth(500)
-        self.graph_canvas.fig.set_figheight(500)
+        # self.graph_canvas = GraphCanvas(self.appPage)
+        # self.graph_canvas.fig.set_figwidth(500)
+        # self.graph_canvas.fig.set_figheight(500)
         # self.graph_canvas.resize()
 
-        self.contentVbox.addWidget(self.graph_canvas)
+        # self.contentVbox.addWidget(self.graph_canvas)
+
+        self.sensorGraph = PlotWidget(self.appPage)
+        
+        self.contentVbox.addWidget(self.sensorGraph)
 
         self.showFooter("PREDICTION RESULT")
     
     def hideDefaultPredictionResultContent(self):
-        print("deleted")
-        self.graph_canvas.deleteLater()
+        # self.graph_canvas.deleteLater()
+        self.sensorGraph.deleteLater()
         self.hideFooter()
         # self.deleteLabel(self.resultLabel)
+
+    def plot_sensor_data(self, sensor_datas : pd.DataFrame):
+        sensor_colors = {
+            'TGS2600'   : QColor(255, 255, 255, 127), 
+            'TGS2602'   : QColor(255, 255, 0, 127), 
+            'TGS816'    : QColor(0, 0, 255, 127), 
+            'TGS813'    : QColor(255, 0, 0, 127), 
+            'MQ8'       : QColor(255, 255, 255, 127),
+            'TGS2611'   : QColor(255, 255, 0, 127), 
+            'TGS2620'   : QColor(0, 0, 255, 127), 
+            'TGS822'    : QColor(0, 255, 0, 127), 
+            'MQ135'     : QColor(0, 255, 255, 127), 
+            'MQ3'       : QColor(105, 100, 140, 127)
+        }
+
+        self.sensorGraph.plotItem.clear()
+
+        for sensor_key in sensor_colors.keys():
+            sensor_data = sensor_datas[sensor_key].to_list()
+
+            pen = QPen()
+            pen.setWidthF(0.5)
+            pen.setColor(sensor_colors[sensor_key])
+            
+            self.sensorGraph.plotItem.addItem(
+                PlotDataItem(
+                    y=sensor_data, 
+                    pen=pen
+                )
+            )
 
     def changeContent(self, dest):
         cur = self.currentScreen

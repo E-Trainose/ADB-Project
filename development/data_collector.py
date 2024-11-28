@@ -16,8 +16,11 @@ take data sample:
     done
 """
 
-class DataCollector:
+class DataCollector(QObject):
+    progress = pyqtSignal(int)
+
     def __init__(self, port : str = "", amount : int = 0):
+        super().__init__()
         self.port = port
         self.baudrate = 9600
         self.timeout = 1
@@ -66,6 +69,8 @@ class DataCollector:
 
                     self.sensor_values.append(sensor_values)
 
+                    progress = int((data_count / max_data_count) * 100)
+                    self.progress.emit(progress)
                     # Increment the counter
                     data_count += 1
 
@@ -99,6 +104,10 @@ class DataCollector:
 
 class DataCollectionThread(QThread):
     finished = pyqtSignal(pd.DataFrame)
+    progress = pyqtSignal(int)
+
+    def on_progress(self, progress):
+        self.progress.emit(progress)
 
     def setPort(self, port: str):
         self.port = port
@@ -111,8 +120,10 @@ class DataCollectionThread(QThread):
             print(f"Collecting from port {self.port} with amount {self.amount}")
             # Pass the amount parameter when initializing DataCollector
             self.data_collector = DataCollector(port=self.port, amount=self.amount)
+            self.data_collector.progress.connect(self.on_progress)
             self.data_collector.initialize()
             self.data_collector.collect()
+            
             # self.data_collector.save(filename='file.csv')
             datas = self.data_collector.getDataFrame()
 

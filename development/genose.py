@@ -16,6 +16,7 @@ SUCCESS = 1
 
 class Genose(QObject):
     data_collection_finished = pyqtSignal(int)
+    data_collection_progress = pyqtSignal(int)
     predict_finished = pyqtSignal(int)
     
     def __init__(self):
@@ -26,6 +27,9 @@ class Genose(QObject):
     def __onDataCollectionFinish(self, datas : pd.DataFrame):
         self.sensorData = datas
         self.data_collection_finished.emit(SUCCESS)
+
+    def __onDataCollectionProgress(self, progress : int):
+        self.data_collection_progress.emit(progress)
 
     def __onPredictFinish(self, predictions):
         print(f"predictions : {predictions}")
@@ -54,6 +58,7 @@ class Genose(QObject):
     def startCollectData(self, port, amount = DEFAULT_DATA_COLLECT_AMOUNT):
         self.data_collection_thread = DataCollectionThread()
         self.data_collection_thread.finished.connect(self.__onDataCollectionFinish)
+        self.data_collection_thread.progress.connect(self.__onDataCollectionProgress)
         self.data_collection_thread.setPort(port=port)
         self.data_collection_thread.setAmount(amount=amount)
         self.data_collection_thread.start()

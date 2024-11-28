@@ -25,9 +25,11 @@ class AppWindow(MainWindow):
         self.genose = Genose()
         
         self.genose.data_collection_finished.connect(self.on_data_collection_finished)
+        self.genose.data_collection_progress.connect(self.on_data_collection_progress)
         self.genose.predict_finished.connect(self.on_prediction_finished)
 
     def collect_data_with_loading(self):
+        print("Collecting data")
         # Retrieve the user input
         selectedPort = self.comboxPortSelector.currentText()
         # selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
@@ -36,14 +38,6 @@ class AppWindow(MainWindow):
         if(selectAmount <= 0):
             # need to display error
             return
-        
-        # Create and configure the progress dialog
-        self.progress_dialog = QProgressDialog("Collecting data...", None, 0, 0, self)
-        self.progress_dialog.setWindowTitle("Please Wait")
-        self.progress_dialog.setWindowModality(Qt.WindowModal)
-        self.progress_dialog.setCancelButton(None)
-        self.progress_dialog.setRange(0, 0)
-        self.progress_dialog.show()
 
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
 
@@ -51,33 +45,19 @@ class AppWindow(MainWindow):
         self.model_predict_with_loading(model_id=AI_MODEL_DICT['SVM'])
 
     def model_predict_with_loading(self, model_id):
-        # Create and configure the progress dialog
-        self.progress_dialog = QProgressDialog("Predicting...", None, 0, 0, self)
-        self.progress_dialog.setWindowTitle("Please Wait")
-        self.progress_dialog.setWindowModality(Qt.WindowModal)
-        self.progress_dialog.setCancelButton(None)
-        self.progress_dialog.setRange(0, 0)
-        self.progress_dialog.show()
-
         self.genose.setAIModel(model_id)
         self.genose.startPredict()
 
     def on_data_collection_finished(self):
-        # Close the progress dialog when data collection is done
-        self.progress_dialog.close()
-        QMessageBox.information(self, "Data Collection", "Data collection completed successfully!")
-        
+        self.pbar.setValue(100)
         self.changeContent("def-model-selection")
 
-    def on_prediction_finished(self):
-        # Close the progress dialog when data collection is done
-        self.progress_dialog.close()
+    def on_data_collection_progress(self, progress):
+        self.pbar.setValue(progress)
 
+    def on_prediction_finished(self):
         self.changeContent("def-prediction-result")
-        
-        self.graph_canvas.update_plot(plot_datas=self.genose.sensorData)
-        
-        QMessageBox.information(self, "Prediction", "Prediction completed successfully!")
+        self.plot_sensor_data(self.genose.sensorData)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
