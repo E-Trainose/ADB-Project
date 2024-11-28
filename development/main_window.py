@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
 
     def goToLaunch(self):
         self.pages.setCurrentIndex(0)
-        self.changeContent("home")
+        self.changeContent("launch")
         self.currentScreen = "launch"
 
     def showHeader(self, text):
@@ -182,8 +182,8 @@ class MainWindow(QMainWindow):
     def showDefaultTakeSampleContent(self):
         self.currentScreen = "def-take-sample"
         self.takeDataButton = self.createContentButton("TAKE DATA SAMPLE", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(30, 10))
-        self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
-        # self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
+        # self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
+        self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
         self.comboxPortSelector = QComboBox()
         self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
@@ -201,8 +201,8 @@ class MainWindow(QMainWindow):
     def showDefaultModelSelectionContent(self):
         self.currentScreen = "def-model-selection"
         self.svmButton = self.createContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
-        self.svmButton.clicked.connect(lambda : self.changeContent("def-prediction-result"))
-        # self.svmButton.clicked.connect(lambda : self.model_select_sig.emit("svm"))
+        # self.svmButton.clicked.connect(lambda : self.changeContent("def-prediction-result"))
+        self.svmButton.clicked.connect(lambda : self.model_select_sig.emit("svm"))
 
         self.rfButton = self.createContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
         self.rfButton.clicked.connect(lambda : self.model_select_sig.emit("rf"))
@@ -223,7 +223,8 @@ class MainWindow(QMainWindow):
         self.currentScreen = "def-prediction-result"
         # self.resultLabel = self.createLabel("PREDICTION RESULT", self.fonts[1], "gray", self.appPage)
         self.graph_canvas = GraphCanvas(self.appPage)
-        self.graph_canvas.update_plot_([0,1,2,3,4,5])
+        self.graph_canvas.fig.set_figwidth(500)
+        self.graph_canvas.fig.set_figheight(500)
         # self.graph_canvas.resize()
 
         self.contentVbox.addWidget(self.graph_canvas)
@@ -264,15 +265,11 @@ class MainWindow(QMainWindow):
             self.showDefaultPredictionResultContent()
 
     def loadFonts(self):
-        print(os.path.dirname(__file__) )
         font1 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-Thin.ttf') 
         font2 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-ExtraBold.ttf') 
         font3 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-SemiBold.ttf')
 
-        print(font1)
         self.fonts = [font1, font2, font3]
-        
-        print(QFontDatabase.applicationFontFamilies(font1))
 
     def updateGeometries(self, a0):
         global WIDTH, HEIGHT, WX, HX
@@ -377,6 +374,8 @@ class MainWindow(QMainWindow):
             self.resized.disconnect(label.__onResize)
             label.deleteLater()
         except AttributeError as e:
+            print("WARNING : ", e)
+        except TypeError as e:
             print("WARNING : ", e)
 
 if __name__ == '__main__':

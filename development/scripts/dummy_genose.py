@@ -20,16 +20,16 @@ while True:
         siny = math.sin(sin_inputs[counter])
                          
         datas = [
-            int(siny * 10),
-            int(siny * 100),
-            int(siny * 150),
-            int(siny * 200),
-            int(siny * 250),
-            int(siny * 300),
-            int(siny * 350),
-            int(siny * 400),
-            int(siny * 500),
-            int(siny * 600),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
+            randint(0, 1000),
         ]
 
         counter = counter + 1

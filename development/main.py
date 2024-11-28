@@ -20,6 +20,7 @@ class AppWindow(MainWindow):
         self.aboutButton.clicked.connect(lambda : print("info"))
 
         self.take_data_sig.connect(lambda: self.collect_data_with_loading())
+        self.model_select_sig.connect(lambda: self.svm_model_predict_with_loading())
 
         self.genose = Genose()
         
@@ -46,6 +47,21 @@ class AppWindow(MainWindow):
 
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
 
+    def svm_model_predict_with_loading(self):
+        self.model_predict_with_loading(model_id=AI_MODEL_DICT['SVM'])
+
+    def model_predict_with_loading(self, model_id):
+        # Create and configure the progress dialog
+        self.progress_dialog = QProgressDialog("Predicting...", None, 0, 0, self)
+        self.progress_dialog.setWindowTitle("Please Wait")
+        self.progress_dialog.setWindowModality(Qt.WindowModal)
+        self.progress_dialog.setCancelButton(None)
+        self.progress_dialog.setRange(0, 0)
+        self.progress_dialog.show()
+
+        self.genose.setAIModel(model_id)
+        self.genose.startPredict()
+
     def on_data_collection_finished(self):
         # Close the progress dialog when data collection is done
         self.progress_dialog.close()
@@ -56,9 +72,10 @@ class AppWindow(MainWindow):
     def on_prediction_finished(self):
         # Close the progress dialog when data collection is done
         self.progress_dialog.close()
+
+        self.changeContent("def-prediction-result")
         
-        # self.plot_sensor_data(sensor_datas=self.genose.sensorData)
-        # self.graph_canvas.update_plot(self.genose.sensorData)
+        self.graph_canvas.update_plot(plot_datas=self.genose.sensorData)
         
         QMessageBox.information(self, "Prediction", "Prediction completed successfully!")
 
