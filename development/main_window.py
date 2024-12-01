@@ -162,6 +162,13 @@ class AutoFontLineEdit(QLineEdit):
         sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
         self.setSizePolicy(sp)
 
+        stylesheet = '''
+                border-radius : 10px; 
+                background-color : #D2D2D2;
+                padding : 10px;
+            '''
+        self.setStyleSheet(stylesheet)
+
         self.__parent.resized.connect(self.onResize)
 
         self.onResize()
@@ -267,7 +274,8 @@ class MainWindow(CustomMainWindow):
         self.currentScreen = "launch"
 
     def showHeader(self, text):
-        self.header = self.createLabel(text, self.fonts[1], "#FA6FC3", self)
+        self.header = self.createLabel(text, self.fonts[1], "#FA6FC3", self, QSize(20, 10))
+        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.headerVbox.addWidget(self.header)
 
@@ -312,7 +320,7 @@ class MainWindow(CustomMainWindow):
     
     def showDefaultTakeSampleContent(self):
         self.currentScreen = "def-take-sample"
-        self.takeDataButton = self.createContentButton("TAKE DATA SAMPLE", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(30, 10))
+        self.takeDataButton = AutoFontContentButton(text="TAKE DATA SAMPLE", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
         # self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
@@ -346,20 +354,20 @@ class MainWindow(CustomMainWindow):
     def hideDefaultTakeSampleContent(self):
         self.barHbox.removeItem(self.spacer1)
         self.barHbox.removeItem(self.spacer2)
-        self.deleteContentButton(self.takeDataButton)
+        self.takeDataButton.deleteLater()
         self.comboxPortSelector.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
 
     def showDefaultModelSelectionContent(self):
         self.currentScreen = "def-model-selection"
-        self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
         self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
 
-        self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
         self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
 
-        self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
         self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
 
         self.contentVbox.addWidget(self.svmButton)
@@ -367,9 +375,9 @@ class MainWindow(CustomMainWindow):
         self.contentVbox.addWidget(self.nnButton)
 
     def hideDefaultModelSelectionContent(self):
-        self.deleteContentButton(self.svmButton)
-        self.deleteContentButton(self.rfButton)
-        self.deleteContentButton(self.nnButton)
+        self.svmButton.deleteLater()
+        self.rfButton.deleteLater()
+        self.nnButton.deleteLater()
 
     def showDefaultPredictionResultContent(self):
         self.currentScreen = "def-prediction-result"
@@ -393,8 +401,8 @@ class MainWindow(CustomMainWindow):
         self.flushLabel = self.createLabel("Flush Timer (s)", self.fonts[1], "#D9D9D9", self.appPage, QSize(23, 8))
 
         self.applyButton = AutoFontContentButton("apply", self.fonts[1], "#FA6FC3", 1.0, QSize(10, 6), self)
-        self.inhaleValEdit = AutoFontLineEdit(self)
-        self.flushValEdit = AutoFontLineEdit(self)
+        self.inhaleValEdit = AutoFontLineEdit(self, QSize(5,8))
+        self.flushValEdit = AutoFontLineEdit(self, QSize(5,8))
 
         self.labelVbox = QVBoxLayout()
         self.labelVbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -572,23 +580,23 @@ class MainWindow(CustomMainWindow):
         
         return button
     
-    def createContentButton(self, text : str, font_idx : int, color_hex : str, scale : float, parent, minSize : QSize = QSize(20, 20)) -> AutoFontButton:
-        button = self.createButton(text, font_idx, color_hex, scale, parent)
+    # def createContentButton(self, text : str, font_idx : int, color_hex : str, scale : float, parent, minSize : QSize = QSize(20, 20)) -> AutoFontButton:
+    #     button = self.createButton(text, font_idx, color_hex, scale, parent)
 
-        sp = button.sizePolicy()
-        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
-        button.setSizePolicy(sp)
+    #     sp = button.sizePolicy()
+    #     sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+    #     button.setSizePolicy(sp)
         
-        button.__onResize = lambda: button.setFixedSize(px(minSize.width()), py(minSize.height()))
-        button.__onResize()
+    #     button.__onResize = lambda: button.setFixedSize(px(minSize.width()), py(minSize.height()))
+    #     button.__onResize()
 
-        self.resized.connect(button.__onResize)
+    #     self.resized.connect(button.__onResize)
 
-        return button
+    #     return button
     
-    def deleteContentButton(self, button : AutoFontButton):
-        self.resized.disconnect(button.__onResize)
-        button.deleteLater()
+    # def deleteContentButton(self, button : AutoFontButton):
+    #     self.resized.disconnect(button.__onResize)
+    #     button.deleteLater()
     
     def createLabel(self, text : str, font_idx : int, color_hex : str, parent, minSize : QSize = QSize(5, 5)) -> QLabel:
         color = color_hex
@@ -611,7 +619,7 @@ class MainWindow(CustomMainWindow):
         sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
         label.setSizePolicy(sp)
 
-        label.__onResize = lambda: label.setMinimumSize(px(minSize.width()), py(minSize.height()))
+        label.__onResize = lambda: label.setFixedSize(px(minSize.width()), py(minSize.height()))
         label.__onResize()
 
         self.resized.connect(label.__onResize)
