@@ -12,6 +12,12 @@ AI_MODEL_DICT = {
     "RF" : 2
 }
 
+PREDICT_RESULT_DICT = {
+    0 : "KOPI",
+    10 : "Dontknow bruh",
+    100 : "APA"
+}
+
 SUCCESS = 1
 
 class Genose(QObject):
@@ -23,6 +29,7 @@ class Genose(QObject):
         super().__init__()
         self.aiModel = None
         self.sensorData = None
+        self.predictions = []
 
     def __onDataCollectionFinish(self, datas : pd.DataFrame):
         self.sensorData = datas
@@ -33,6 +40,7 @@ class Genose(QObject):
 
     def __onPredictFinish(self, predictions):
         print(f"predictions : {predictions}")
+        self.predictions = predictions
         self.predict_finished.emit(SUCCESS)
 
     def setAIModel(self, model_id):

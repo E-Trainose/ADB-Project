@@ -1,6 +1,6 @@
 import sys, os
 from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar, QLineEdit, QLayoutItem, QWidgetItem
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase, QColor, QPen
 from pyqtgraph import PlotDataItem, PlotWidget
 import serial.tools.list_ports
@@ -8,6 +8,8 @@ import serial.tools.list_ports
 import PyQt5.sip as sip
 import config
 import pandas as pd
+from genose import AI_MODEL_DICT
+import typing
 
 WIDTH = 1280
 HEIGHT = 720
@@ -20,6 +22,27 @@ def px(x):
 
 def py(x):
     return int(HX * x)
+
+class CustomMainWindow(QMainWindow):
+    resized = pyqtSignal()
+
+    def __init__(self, parent = ..., flags = ...):
+        super(CustomMainWindow, self).__init__()
+    
+    def updateGeometries(self, a0):
+        global WIDTH, HEIGHT, WX, HX
+        
+        WIDTH = a0.size().width()
+        HEIGHT = a0.size().height()
+        WX = WIDTH / 100.0
+        HX = HEIGHT / 100.0
+
+        self.resized.emit()
+
+    def resizeEvent(self, a0):
+        self.updateGeometries(a0)
+
+        return super().resizeEvent(a0)
 
 class ResizedLogoLabel(QLabel):
     def setSourcePixmap(self, source : QPixmap):
@@ -61,11 +84,108 @@ class AutoFontLabel(QLabel):
         new_font.setPointSize(py(3))
         self.setFont(new_font)
         return super().resizeEvent(a0)
+    
+class AutoFontContentButton(QPushButton):
+    def __init__(self, text : str = "", font_idx : int = None, color_hex : str = "#FA6FC3", scale : float = 1.0, percentSize = QSize(20, 10), parent : CustomMainWindow | None = None):
+        super().__init__(text, parent)
 
-class MainWindow(QMainWindow):
-    resized = pyqtSignal()
+        self.__parent = parent
+
+        self.color = color_hex
+        self.percentSize = percentSize
+
+        if(font_idx != None):
+            button_font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
+            new_font = button_font
+            new_font.setPixelSize(50)
+            new_font.setLetterSpacing(QFont.SpacingType.PercentageSpacing, 120)
+
+            self.setFont(new_font)
+
+            self.setFontScale(scale)
+
+        stylesheet = '''
+            QPushButton {{
+                border-radius : 10px; 
+                background-color: {color}; 
+                padding: 10px;
+            }}
+            QPushButton:pressed {{
+                background-color: gray; 
+            }}
+            '''.format(color=self.color)
+
+        self.setStyleSheet(stylesheet)
+
+        effect = QGraphicsDropShadowEffect()
+
+        effect.setBlurRadius(15)
+        effect.setOffset(5, 5)
+
+        self.setGraphicsEffect(effect)
+        
+        sp = self.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(sp)
+
+        self.__parent.resized.connect(self.onResize)
+
+        self.onResize()
+    
+    def onResize(self):
+        self.setFixedSize(px(self.percentSize.width()), py(self.percentSize.height()))
+    
+    def setFontScale(self, scale):
+        self.fontScale = scale
+
+    def resizeEvent(self, a0):
+        new_font = self.font()
+        new_font.setPointSize(py(self.fontScale))
+        self.setFont(new_font)
+
+        return super().resizeEvent(a0)
+    
+    def deleteLater(self):
+        self.__parent.resized.disconnect(self.onResize)
+
+        return super().deleteLater()
+
+class AutoFontLineEdit(QLineEdit):
+    def __init__(self, parent : CustomMainWindow | None = None, percentSize : QSize = QSize(5, 10)):
+        super().__init__(parent)
+
+        self.__parent = parent
+        self.percentSize = percentSize
+        
+        sp = self.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(sp)
+
+        self.__parent.resized.connect(self.onResize)
+
+        self.onResize()
+
+    def onResize(self):
+        self.setFixedSize(px(self.percentSize.width()), py(self.percentSize.height()))
+
+    def setPercentageSize(self, size : QSize):
+        self.percentSize = size
+
+    def resizeEvent(self, a0):
+        new_font = self.font()
+        new_font.setPointSize(py(3))
+        self.setFont(new_font)
+        return super().resizeEvent(a0)
+    
+    def deleteLater(self):
+        self.__parent.resized.disconnect(self.onResize)
+
+        return super().deleteLater()
+    
+class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
-    model_select_sig = pyqtSignal(str)
+    model_select_sig = pyqtSignal(int)
 
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
@@ -109,12 +229,14 @@ class MainWindow(QMainWindow):
         self.homeButton.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.homeButton.setSourcePixmap(home_pixmap)
         self.homeButton.clicked.connect(lambda: self.goToLaunch())
+        self.homeButton.setToolTip("Kembali ke beranda")
         self.resized.connect(lambda: self.homeButton.setGeometry(px(2), py(80), px(10), py(10)))
 
         self.aboutButton = ClickableLabel(self.appPage)
         self.aboutButton.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.aboutButton.setSourcePixmap(about_pixmap)
         self.aboutButton.clicked.connect(lambda: print("about"))
+        self.aboutButton.setToolTip("Bantuan")
         self.resized.connect(lambda: self.aboutButton.setGeometry(px(86), py(2), px(10), py(10)))
 
         self.headerWidget = QWidget(self.appPage)
@@ -168,13 +290,20 @@ class MainWindow(QMainWindow):
 
     def showHomeContent(self):
         self.currentScreen = "home"
-        self.defaultButton = self.createContentButton("DEFAULT", self.fonts[1], "#FA6FC3", 3, self.appPage)
+        self.defaultButton = AutoFontContentButton(text="DEFAULT", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
         self.defaultButton.clicked.connect(lambda : self.changeContent("def-take-sample"))
 
+        self.customButton = AutoFontContentButton(text="CUSTOM", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
+        self.customButton.clicked.connect(lambda : self.changeContent("cus-genose-setting"))
+
         self.contentVbox.addWidget(self.defaultButton)
+        self.contentVbox.addWidget(self.customButton)
 
     def hideHomeContent(self):
-        self.deleteContentButton(self.defaultButton)
+        # self.deleteContentButton(self.customButton)
+        # self.deleteContentButton(self.defaultButton)
+        self.defaultButton.deleteLater()
+        self.customButton.deleteLater()
 
     def findPorts(self):
         ports = serial.tools.list_ports.comports()
@@ -224,15 +353,14 @@ class MainWindow(QMainWindow):
 
     def showDefaultModelSelectionContent(self):
         self.currentScreen = "def-model-selection"
-        self.svmButton = self.createContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
-        # self.svmButton.clicked.connect(lambda : self.changeContent("def-prediction-result"))
-        self.svmButton.clicked.connect(lambda : self.model_select_sig.emit("svm"))
+        self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
 
-        self.rfButton = self.createContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
-        self.rfButton.clicked.connect(lambda : self.model_select_sig.emit("rf"))
+        self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
 
-        self.nnButton = self.createContentButton("NN", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
-        self.nnButton.clicked.connect(lambda : self.model_select_sig.emit("nn"))
+        self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, self.appPage, QSize(25, 10))
+        self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
 
         self.contentVbox.addWidget(self.svmButton)
         self.contentVbox.addWidget(self.rfButton)
@@ -245,14 +373,7 @@ class MainWindow(QMainWindow):
 
     def showDefaultPredictionResultContent(self):
         self.currentScreen = "def-prediction-result"
-        # self.resultLabel = self.createLabel("PREDICTION RESULT", self.fonts[1], "gray", self.appPage)
-        # self.graph_canvas = GraphCanvas(self.appPage)
-        # self.graph_canvas.fig.set_figwidth(500)
-        # self.graph_canvas.fig.set_figheight(500)
-        # self.graph_canvas.resize()
-
-        # self.contentVbox.addWidget(self.graph_canvas)
-
+        
         self.sensorGraph = PlotWidget(self.appPage)
         
         self.contentVbox.addWidget(self.sensorGraph)
@@ -260,10 +381,69 @@ class MainWindow(QMainWindow):
         self.showFooter("PREDICTION RESULT")
     
     def hideDefaultPredictionResultContent(self):
-        # self.graph_canvas.deleteLater()
         self.sensorGraph.deleteLater()
         self.hideFooter()
-        # self.deleteLabel(self.resultLabel)
+
+    def showCustomGenoseSettingContent(self):
+        self.currentScreen = "cus-genose-setting"
+        
+        self.showHeader("CUSTOM")
+        
+        self.inhaleLabel = self.createLabel("Inhale Timer (s)", self.fonts[1], "#D9D9D9", self.appPage, QSize(23, 8))
+        self.flushLabel = self.createLabel("Flush Timer (s)", self.fonts[1], "#D9D9D9", self.appPage, QSize(23, 8))
+
+        self.applyButton = AutoFontContentButton("apply", self.fonts[1], "#FA6FC3", 1.0, QSize(10, 6), self)
+        self.inhaleValEdit = AutoFontLineEdit(self)
+        self.flushValEdit = AutoFontLineEdit(self)
+
+        self.labelVbox = QVBoxLayout()
+        self.labelVbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.labelVbox.addWidget(self.inhaleLabel)
+        self.labelVbox.addWidget(self.flushLabel)
+
+        self.valueVbox = QVBoxLayout()
+        self.valueVbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.valueVbox.addWidget(self.inhaleValEdit)
+        self.valueVbox.addWidget(self.flushValEdit)
+
+        self.settingHbox = QHBoxLayout()
+        self.settingHbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.settingHbox.addLayout(self.labelVbox)
+        self.settingHbox.addLayout(self.valueVbox)
+
+        self.applyVbox = QVBoxLayout()
+        self.applyVbox.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.applyVbox.addWidget(self.applyButton)
+
+        self.contentVbox.addLayout(self.settingHbox)
+        self.contentVbox.addLayout(self.applyVbox)
+
+    def hideCustomGenoseSettingContent(self):
+        self.clearContentVbox()
+
+    def showCustomTakeDatasetContent(self):
+        pass
+
+    def hideCustomTakeDatasetContent(self):
+        pass
+
+    def showCustomPreprocessingContent(self):
+        pass
+
+    def hideCustomPreprocessingContent(self):
+        pass
+
+    def showCustomFeatureSelectContent(self):
+        pass
+
+    def hideCustomFeatureSelectContent(self):
+        pass
+
+    def showCustomAIModelContent(self):
+        pass
+
+    def hideCustomAIModelContent(self):
+        pass
 
     def plot_sensor_data(self, sensor_datas : pd.DataFrame):
         sensor_colors = {
@@ -307,6 +487,8 @@ class MainWindow(QMainWindow):
             self.hideDefaultModelSelectionContent()
         elif(cur == "def-prediction-result"):
             self.hideDefaultPredictionResultContent()
+        elif(cur == "cus-genose-setting"):
+            self.hideCustomGenoseSettingContent()
 
         #show new content
         if(dest == "home"):
@@ -321,6 +503,30 @@ class MainWindow(QMainWindow):
             self.showDefaultModelSelectionContent()
         elif(dest == "def-prediction-result"):
             self.showDefaultPredictionResultContent()
+        elif(dest == "cus-genose-setting"):
+            self.showCustomGenoseSettingContent()
+
+    def deleteChilds(self, obj):
+        if issubclass(obj.__class__, QLayout):
+            for i in reversed(range(obj.count())):
+                child = obj.itemAt(i)
+                print(f"child ke {i} : {child}")
+
+                self.deleteChilds(child)
+                
+                layout = obj.layout()
+                layout.deleteLater()
+        elif issubclass(obj.__class__, QWidgetItem):
+            print("delete this")
+            
+            widget = obj.widget()
+            widget.deleteLater()
+
+        return True
+
+    def clearContentVbox(self):
+        for child in self.contentVbox.children():
+            self.deleteChilds(child)
 
     def loadFonts(self):
         font1 = QFontDatabase.addApplicationFont(f'{config.WORKING_DIR_PATH}/resources/Montserrat/static/Montserrat-Thin.ttf') 
@@ -329,21 +535,6 @@ class MainWindow(QMainWindow):
 
         self.fonts = [font1, font2, font3]
 
-    def updateGeometries(self, a0):
-        global WIDTH, HEIGHT, WX, HX
-        
-        WIDTH = a0.size().width()
-        HEIGHT = a0.size().height()
-        WX = WIDTH / 100.0
-        HX = HEIGHT / 100.0
-
-        self.resized.emit()
-
-    def resizeEvent(self, a0):
-        self.updateGeometries(a0)
-
-        return super().resizeEvent(a0)
-    
     def createButton(self, text : str, font_idx : int, color_hex : str, scale : float, parent) -> AutoFontButton:
         color = color_hex
         button_font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
@@ -399,7 +590,7 @@ class MainWindow(QMainWindow):
         self.resized.disconnect(button.__onResize)
         button.deleteLater()
     
-    def createLabel(self, text : str, font_idx : int, color_hex : str, parent) -> QLabel:
+    def createLabel(self, text : str, font_idx : int, color_hex : str, parent, minSize : QSize = QSize(5, 5)) -> QLabel:
         color = color_hex
         font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
         label = AutoFontLabel(text, parent)
@@ -420,7 +611,7 @@ class MainWindow(QMainWindow):
         sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
         label.setSizePolicy(sp)
 
-        label.__onResize = lambda: label.setMinimumSize(px(5), py(5))
+        label.__onResize = lambda: label.setMinimumSize(px(minSize.width()), py(minSize.height()))
         label.__onResize()
 
         self.resized.connect(label.__onResize)

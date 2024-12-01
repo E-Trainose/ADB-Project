@@ -1,15 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMessageBox, QProgressDialog
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.uic.properties import QtWidgets
-from pyqtgraph import PlotDataItem
-import seaborn
-import pandas as pd
-import numpy as np
-from random import randint
+from PyQt5.QtWidgets import QApplication
 
-from genose import Genose, AI_MODEL_DICT
-from graph_canvas import GraphCanvas
+from genose import Genose, AI_MODEL_DICT, PREDICT_RESULT_DICT
 
 from main_window import MainWindow
 
@@ -19,8 +11,8 @@ class AppWindow(MainWindow):
 
         self.aboutButton.clicked.connect(lambda : print("info"))
 
-        self.take_data_sig.connect(lambda: self.collect_data_with_loading())
-        self.model_select_sig.connect(lambda: self.svm_model_predict_with_loading())
+        self.take_data_sig.connect(self.collect_data_with_loading)
+        self.model_select_sig.connect(self.model_predict_with_loading)
 
         self.genose = Genose()
         
@@ -38,17 +30,17 @@ class AppWindow(MainWindow):
         if(selectAmount <= 0):
             # need to display error
             return
+        
+        self.takeDataButton.setDisabled(True)
 
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
-
-    def svm_model_predict_with_loading(self):
-        self.model_predict_with_loading(model_id=AI_MODEL_DICT['SVM'])
 
     def model_predict_with_loading(self, model_id):
         self.genose.setAIModel(model_id)
         self.genose.startPredict()
 
     def on_data_collection_finished(self):
+        self.takeDataButton.setDisabled(False)
         self.pbar.setValue(100)
         self.changeContent("def-model-selection")
 
@@ -57,6 +49,12 @@ class AppWindow(MainWindow):
 
     def on_prediction_finished(self):
         self.changeContent("def-prediction-result")
+        
+        result = self.genose.predictions[len(self.genose.predictions) - 1]
+        result = PREDICT_RESULT_DICT[result]
+
+        self.header.setText(result)
+        
         self.plot_sensor_data(self.genose.sensorData)
 
 if __name__ == '__main__':
