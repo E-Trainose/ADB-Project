@@ -79,11 +79,48 @@ class AutoFontButton(QPushButton):
         return super().resizeEvent(a0)
     
 class AutoFontLabel(QLabel):
+    def __init__(self, text : str, font_idx : int, color_hex : str, scale : float = 1.0, parent : CustomMainWindow = None, percentSize : QSize = QSize(5, 5)):
+        super().__init__(text, parent)
+        
+        self.__parent = parent
+        self.percentSize = percentSize
+        self.fontScale = scale
+
+        stylesheet = '''
+            QLabel {{
+                border-radius : 10px; 
+                background-color: {color}; 
+                padding: 10px;
+            }}
+            '''.format(color=color_hex)
+        
+        font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
+
+        self.setStyleSheet(stylesheet)
+        self.setFont(font)
+
+        # responsive settings
+        sp = self.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(sp)
+
+        self.__parent.resized.connect(self.onResize)
+
+        self.onResize()
+
+    def onResize(self):
+        self.setFixedSize(px(self.percentSize.width()), py(self.percentSize.height()))
+        
     def resizeEvent(self, a0):
         new_font = self.font()
-        new_font.setPointSize(py(3))
+        new_font.setPointSize(py(self.fontScale))
         self.setFont(new_font)
         return super().resizeEvent(a0)
+    
+    def deleteLater(self):
+        self.__parent.resized.disconnect(self.onResize)
+
+        return super().deleteLater()
     
 class AutoFontContentButton(QPushButton):
     def __init__(self, text : str = "", font_idx : int = None, color_hex : str = "#FA6FC3", scale : float = 1.0, percentSize = QSize(20, 10), parent : CustomMainWindow | None = None):
@@ -218,30 +255,32 @@ class MainWindow(CustomMainWindow):
         self.startButton.clicked.connect(lambda : self.goToApp())
         self.resized.connect(lambda: self.startButton.setGeometry(px(40), py(80), px(20), py(10)))
 
-        logo_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/etrainose_logo.png")
-        home_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/home_icon.png")
-        about_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/about_icon.png")
+        self.logo_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/etrainose_logo.png")
+        self.home_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/home_icon.png")
+        self.about_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/about_icon.png")
+        self.botnav_next_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/next_button.png")
+        self.botnav_prev_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/prev_button.png")
 
         self.launchLogo = ResizedLogoLabel(self.launchPage)
         self.launchLogo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.launchLogo.setSourcePixmap(logo_pixmap)
+        self.launchLogo.setSourcePixmap(self.logo_pixmap)
         self.resized.connect(lambda: self.launchLogo.setGeometry(px(30), py(10), px(40), py(60)))
 
         self.appLogo = ResizedLogoLabel(self.appPage)
         self.appLogo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.appLogo.setSourcePixmap(logo_pixmap)
+        self.appLogo.setSourcePixmap(self.logo_pixmap)
         self.resized.connect(lambda: self.appLogo.setGeometry(px(2), py(2), px(10), py(20)))
 
         self.homeButton = ClickableLabel(self.appPage)
         self.homeButton.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.homeButton.setSourcePixmap(home_pixmap)
+        self.homeButton.setSourcePixmap(self.home_pixmap)
         self.homeButton.clicked.connect(lambda: self.goToLaunch())
         self.homeButton.setToolTip("Kembali ke beranda")
         self.resized.connect(lambda: self.homeButton.setGeometry(px(2), py(80), px(10), py(10)))
 
         self.aboutButton = ClickableLabel(self.appPage)
         self.aboutButton.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.aboutButton.setSourcePixmap(about_pixmap)
+        self.aboutButton.setSourcePixmap(self.about_pixmap)
         self.aboutButton.clicked.connect(lambda: print("about"))
         self.aboutButton.setToolTip("Bantuan")
         self.resized.connect(lambda: self.aboutButton.setGeometry(px(86), py(2), px(10), py(10)))
@@ -263,6 +302,23 @@ class MainWindow(CustomMainWindow):
         self.resized.connect(lambda: self.contentWidget.setGeometry(QRect(px(20), py(18.5), px(60), py(60))))
         self.contentVbox = QVBoxLayout(self.contentWidget)
         self.contentVbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.botNavNext = ClickableLabel(self)
+        self.botNavNext.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.botNavNext.setSourcePixmap(self.botnav_next_pixmap)
+        self.botNavNext.clicked.connect(lambda: print("next"))
+        self.resized.connect(lambda: self.botNavNext.setGeometry(px(85), py(80), px(10), py(10)))
+
+        self.botNavPrev = ClickableLabel(self)
+        self.botNavPrev.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.botNavPrev.setSourcePixmap(self.botnav_prev_pixmap)
+        self.botNavPrev.clicked.connect(lambda: print("back"))
+        self.resized.connect(lambda: self.botNavPrev.setGeometry(px(75), py(80), px(10), py(10)))
+        
+        self.botNavNext.hide()
+        self.botNavPrev.hide()
+
+        self.isBotNavbarShown = False
     
     def goToApp(self):
         self.pages.setCurrentIndex(1)
@@ -270,31 +326,43 @@ class MainWindow(CustomMainWindow):
 
     def goToLaunch(self):
         self.pages.setCurrentIndex(0)
+        self.hideBotNavbar()
         self.changeContent("launch")
         self.currentScreen = "launch"
 
     def showHeader(self, text):
-        self.header = self.createLabel(text, self.fonts[1], "#FA6FC3", self, QSize(20, 10))
+        self.header = AutoFontLabel(text, self.fonts[1], "#FA6FC3", 3.5, self, QSize(20, 10))
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.headerVbox.addWidget(self.header)
 
     def hideHeader(self):
         try:
-            self.deleteLabel(self.header)
+            self.header.deleteLater()
         except AttributeError as e:
             print(e)
     
     def showFooter(self, text):
-        self.footer = self.createLabel(text, self.fonts[1], "#FA6FC3", self)
+        self.footer = AutoFontLabel(text, self.fonts[1], "#FA6FC3", 3.5, self)
         
         self.footerVbox.addWidget(self.footer)
 
     def hideFooter(self):
         try:
-            self.deleteLabel(self.footer)
+            self.footer.deleteLater()
         except AttributeError as e:
             print(e)
+
+    def showBotNavbar(self):
+        self.isBotNavbarShown = True
+        self.botNavNext.show()
+        self.botNavPrev.show()
+        
+        
+    def hideBotNavbar(self):
+        self.isBotNavbarShown = False
+        self.botNavNext.hide()
+        self.botNavPrev.hide()
 
     def showHomeContent(self):
         self.currentScreen = "home"
@@ -308,8 +376,6 @@ class MainWindow(CustomMainWindow):
         self.contentVbox.addWidget(self.customButton)
 
     def hideHomeContent(self):
-        # self.deleteContentButton(self.customButton)
-        # self.deleteContentButton(self.defaultButton)
         self.defaultButton.deleteLater()
         self.customButton.deleteLater()
 
@@ -397,8 +463,8 @@ class MainWindow(CustomMainWindow):
         
         self.showHeader("CUSTOM")
         
-        self.inhaleLabel = self.createLabel("Inhale Timer (s)", self.fonts[1], "#D9D9D9", self.appPage, QSize(23, 8))
-        self.flushLabel = self.createLabel("Flush Timer (s)", self.fonts[1], "#D9D9D9", self.appPage, QSize(23, 8))
+        self.inhaleLabel = AutoFontLabel("Inhale Timer (s)", self.fonts[1], "#D9D9D9", 2.0, self, QSize(23, 8))
+        self.flushLabel = AutoFontLabel("Flush Timer (s)", self.fonts[1], "#D9D9D9", 2.0, self, QSize(23, 8))
 
         self.applyButton = AutoFontContentButton("apply", self.fonts[1], "#FA6FC3", 1.0, QSize(10, 6), self)
         self.inhaleValEdit = AutoFontLineEdit(self, QSize(5,8))
@@ -425,6 +491,8 @@ class MainWindow(CustomMainWindow):
 
         self.contentVbox.addLayout(self.settingHbox)
         self.contentVbox.addLayout(self.applyVbox)
+
+        self.showBotNavbar()
 
     def hideCustomGenoseSettingContent(self):
         self.clearContentVbox()
@@ -502,6 +570,10 @@ class MainWindow(CustomMainWindow):
         if(dest == "home"):
             self.showHomeContent()
 
+            if(self.isBotNavbarShown):
+                print("hello")
+                self.hideBotNavbar()
+
             self.hideHeader()
             self.hideFooter()
 
@@ -518,15 +590,12 @@ class MainWindow(CustomMainWindow):
         if issubclass(obj.__class__, QLayout):
             for i in reversed(range(obj.count())):
                 child = obj.itemAt(i)
-                print(f"child ke {i} : {child}")
 
                 self.deleteChilds(child)
                 
                 layout = obj.layout()
                 layout.deleteLater()
         elif issubclass(obj.__class__, QWidgetItem):
-            print("delete this")
-            
             widget = obj.widget()
             widget.deleteLater()
 
@@ -579,61 +648,6 @@ class MainWindow(CustomMainWindow):
         button.setGraphicsEffect(effect)
         
         return button
-    
-    # def createContentButton(self, text : str, font_idx : int, color_hex : str, scale : float, parent, minSize : QSize = QSize(20, 20)) -> AutoFontButton:
-    #     button = self.createButton(text, font_idx, color_hex, scale, parent)
-
-    #     sp = button.sizePolicy()
-    #     sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
-    #     button.setSizePolicy(sp)
-        
-    #     button.__onResize = lambda: button.setFixedSize(px(minSize.width()), py(minSize.height()))
-    #     button.__onResize()
-
-    #     self.resized.connect(button.__onResize)
-
-    #     return button
-    
-    # def deleteContentButton(self, button : AutoFontButton):
-    #     self.resized.disconnect(button.__onResize)
-    #     button.deleteLater()
-    
-    def createLabel(self, text : str, font_idx : int, color_hex : str, parent, minSize : QSize = QSize(5, 5)) -> QLabel:
-        color = color_hex
-        font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
-        label = AutoFontLabel(text, parent)
-
-        stylesheet = '''
-            QLabel {{
-                border-radius : 10px; 
-                background-color: {color}; 
-                padding: 10px;
-            }}
-            '''.format(color=color)
-        
-        label.setStyleSheet(stylesheet)
-        label.setFont(font)
-
-        # responsive settings
-        sp = label.sizePolicy()
-        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
-        label.setSizePolicy(sp)
-
-        label.__onResize = lambda: label.setFixedSize(px(minSize.width()), py(minSize.height()))
-        label.__onResize()
-
-        self.resized.connect(label.__onResize)
-
-        return label
-    
-    def deleteLabel(self, label : AutoFontLabel):
-        try:
-            self.resized.disconnect(label.__onResize)
-            label.deleteLater()
-        except AttributeError as e:
-            print("WARNING : ", e)
-        except TypeError as e:
-            print("WARNING : ", e)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
