@@ -1,6 +1,8 @@
 import sys, os
-from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar, QLineEdit, QLayoutItem, QWidgetItem
+from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect, QPropertyAnimation
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidgetItem, QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QLineEdit, QLayoutItem 
+from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase, QColor, QPen
 from pyqtgraph import PlotDataItem, PlotWidget
 import serial.tools.list_ports
@@ -10,6 +12,7 @@ import config
 import pandas as pd
 from genose import AI_MODEL_DICT
 import typing
+from enum import Enum
 
 WIDTH = 1280
 HEIGHT = 720
@@ -62,6 +65,7 @@ class ResizedLogoLabel(QLabel):
     
 class ClickableLabel(ResizedLogoLabel):
     clicked = pyqtSignal()
+
     def mousePressEvent(self, event):
         super(ClickableLabel, self).mousePressEvent(event)
         if event.button() == Qt.LeftButton:
@@ -226,7 +230,35 @@ class AutoFontLineEdit(QLineEdit):
         self.__parent.resized.disconnect(self.onResize)
 
         return super().deleteLater()
-    
+
+class Screen:
+    def __init__(self, name : str, showCallback, hideCallback):
+        self.name = name
+        self.showCB = showCallback
+        self.hideCB = hideCallback
+
+    def show(self):
+        self.showCB()
+
+    def hide(self):
+        self.hideCB()
+
+class ScreenNames:
+    LAUNCH                  = "launch"
+    HOME                    = "home"
+    DEF_TAKE_SAMPLE         = "def-take-sample"
+    DEF_MODEL_SELECTION     = "def-model-selection"
+    DEF_PREDICTION_RESULT   = "def-prediction-result"
+    CUS_GENOSE_SETTING      = "cus-genose-setting"
+    CUS_TAKE_RAW            = "cus-take-raw"
+    CUS_PREPROCESSING       = "cus-preprocessing" 
+    CUS_FEATURE_SELECTION   = "cus-feature-selection"
+    CUS_AI_MODEL            = "cus-ai-model"
+    CUS_AI_EVALUATE         = "cus-ai-evaluate"
+    CUS_TAKE_SAMPLE         = "cus-take-sample"
+    CUS_MODEL_SELECTION     = "cus-model-selection"
+    CUS_PREDICTION_RESULT   = "cus-predition-result"
+
 class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
     model_select_sig = pyqtSignal(int)
@@ -234,7 +266,24 @@ class MainWindow(CustomMainWindow):
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
 
-        self.currentScreen = "launch"
+        self.currentScreen = ScreenNames.LAUNCH
+
+        self.screens = {
+            ScreenNames.LAUNCH                : { "show" : self.showLaunchScreen,                      "hide" : self.hideLaunchScreen                     },
+            ScreenNames.HOME                  : { "show" : self.showHomeContent,                       "hide" : self.hideHomeContent                       },
+            ScreenNames.DEF_TAKE_SAMPLE       : { "show" : self.showDefaultTakeSampleContent,          "hide" : self.hideDefaultTakeSampleContent          },
+            ScreenNames.DEF_MODEL_SELECTION   : { "show" : self.showDefaultModelSelectionContent,      "hide" : self.hideDefaultModelSelectionContent      },
+            ScreenNames.DEF_PREDICTION_RESULT : { "show" : self.showDefaultPredictionResultContent,    "hide" : self.hideDefaultPredictionResultContent    },
+            ScreenNames.CUS_GENOSE_SETTING    : { "show" : self.showCustomGenoseSettingContent,        "hide" : self.hideCustomGenoseSettingContent        },
+            ScreenNames.CUS_TAKE_RAW          : { "show" : self.showCustomTakeDatasetContent,          "hide" : self.hideCustomTakeDatasetContent          },
+            ScreenNames.CUS_PREPROCESSING     : { "show" : self.showCustomPreprocessingContent,        "hide" : self.hideCustomPreprocessingContent        },
+            ScreenNames.CUS_FEATURE_SELECTION : { "show" : self.showCustomFeatureSelectContent,        "hide" : self.hideCustomFeatureSelectContent        },
+            ScreenNames.CUS_AI_MODEL          : { "show" : self.showCustomAIModelContent,              "hide" : self.hideCustomAIModelContent              },
+            ScreenNames.CUS_AI_EVALUATE       : { "show" : self.showCustomAIEvaluateContent,           "hide" : self.hideCustomAIEvaluateContent           },
+            ScreenNames.CUS_TAKE_SAMPLE       : { "show" : self.showCustomTakeSampleContent,           "hide" : self.hideCustomTakeSampleContent           },
+            ScreenNames.CUS_MODEL_SELECTION   : { "show" : self.showCustomModelSelectionContent,       "hide" : self.hideCustomModelSelectionContent       },
+            ScreenNames.CUS_PREDICTION_RESULT : { "show" : self.showCustomPredictionResultContent,     "hide" : self.hideCustomPredictionResultContent     },
+        }
 
         self.setStyleSheet("MainWindow { background-color : #537EFF; }")
         self.resize(WIDTH, HEIGHT)
@@ -320,15 +369,20 @@ class MainWindow(CustomMainWindow):
 
         self.isBotNavbarShown = False
     
+    def findPorts(self):
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            self.comboxPortSelector.addItem(port.name)
+
     def goToApp(self):
         self.pages.setCurrentIndex(1)
-        self.changeContent("home")
+        self.changeContent(ScreenNames.HOME)
 
     def goToLaunch(self):
         self.pages.setCurrentIndex(0)
         self.hideBotNavbar()
-        self.changeContent("launch")
-        self.currentScreen = "launch"
+        self.changeContent(ScreenNames.LAUNCH)
+        self.currentScreen = ScreenNames.LAUNCH
 
     def showHeader(self, text):
         self.header = AutoFontLabel(text, self.fonts[1], "#FA6FC3", 3.5, self, QSize(20, 10))
@@ -364,28 +418,31 @@ class MainWindow(CustomMainWindow):
         self.botNavNext.hide()
         self.botNavPrev.hide()
 
+    def showLaunchScreen(self): ...
+    def hideLaunchScreen(self): ...
+
     def showHomeContent(self):
-        self.currentScreen = "home"
         self.defaultButton = AutoFontContentButton(text="DEFAULT", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
-        self.defaultButton.clicked.connect(lambda : self.changeContent("def-take-sample"))
+        self.defaultButton.clicked.connect(lambda : self.changeContent(ScreenNames.DEF_TAKE_SAMPLE))
 
         self.customButton = AutoFontContentButton(text="CUSTOM", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
-        self.customButton.clicked.connect(lambda : self.changeContent("cus-genose-setting"))
+        self.customButton.clicked.connect(lambda : self.changeContent(ScreenNames.CUS_GENOSE_SETTING))
 
         self.contentVbox.addWidget(self.defaultButton)
         self.contentVbox.addWidget(self.customButton)
+
+        if(self.isBotNavbarShown):
+            print("hello")
+            self.hideBotNavbar()
+
+        self.hideHeader()
+        self.hideFooter()
 
     def hideHomeContent(self):
         self.defaultButton.deleteLater()
         self.customButton.deleteLater()
 
-    def findPorts(self):
-        ports = serial.tools.list_ports.comports()
-        for port in ports:
-            self.comboxPortSelector.addItem(port.name)
-    
     def showDefaultTakeSampleContent(self):
-        self.currentScreen = "def-take-sample"
         self.takeDataButton = AutoFontContentButton(text="TAKE DATA SAMPLE", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
         # self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
@@ -426,7 +483,6 @@ class MainWindow(CustomMainWindow):
         self.barHbox.deleteLater()
 
     def showDefaultModelSelectionContent(self):
-        self.currentScreen = "def-model-selection"
         self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
         self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
 
@@ -446,8 +502,6 @@ class MainWindow(CustomMainWindow):
         self.nnButton.deleteLater()
 
     def showDefaultPredictionResultContent(self):
-        self.currentScreen = "def-prediction-result"
-        
         self.sensorGraph = PlotWidget(self.appPage)
         
         self.contentVbox.addWidget(self.sensorGraph)
@@ -459,8 +513,6 @@ class MainWindow(CustomMainWindow):
         self.hideFooter()
 
     def showCustomGenoseSettingContent(self):
-        self.currentScreen = "cus-genose-setting"
-        
         self.showHeader("CUSTOM")
         
         self.inhaleLabel = AutoFontLabel("Inhale Timer (s)", self.fonts[1], "#D9D9D9", 2.0, self, QSize(23, 8))
@@ -497,29 +549,79 @@ class MainWindow(CustomMainWindow):
     def hideCustomGenoseSettingContent(self):
         self.clearContentVbox()
 
-    def showCustomTakeDatasetContent(self):
-        pass
+    def showCustomTakeDatasetContent(self): ...
 
-    def hideCustomTakeDatasetContent(self):
-        pass
+    def hideCustomTakeDatasetContent(self): ...
 
-    def showCustomPreprocessingContent(self):
-        pass
+    def showCustomPreprocessingContent(self): ...
 
-    def hideCustomPreprocessingContent(self):
-        pass
+    def hideCustomPreprocessingContent(self): ...
 
-    def showCustomFeatureSelectContent(self):
-        pass
+    def showCustomFeatureSelectContent(self): ...
 
-    def hideCustomFeatureSelectContent(self):
-        pass
+    def hideCustomFeatureSelectContent(self): ...
 
-    def showCustomAIModelContent(self):
-        pass
+    def showCustomAIModelContent(self): ...
 
-    def hideCustomAIModelContent(self):
-        pass
+    def hideCustomAIModelContent(self): ...
+
+    def showCustomAIEvaluateContent(self): ...
+    
+    def hideCustomAIEvaluateContent(self): ...
+
+    def showCustomTakeSampleContent(self): ...
+
+    def hideCustomTakeSampleContent(self): ...
+
+    def showCustomModelSelectionContent(self): ...
+
+    def hideCustomModelSelectionContent(self): ...
+
+    def showCustomPredictionResultContent(self): ...
+    
+    def hideCustomPredictionResultContent(self): ...
+
+    def changeContent(self, dest):
+        cur = self.currentScreen
+
+        #cleanup last content
+        cur_screen = self.screens.get(cur)
+
+        if(cur_screen != None):
+            hideFunc = cur_screen.get("hide")
+            hideFunc()
+        else:
+            raise Exception(f"Current screen {cur} not found!")
+
+        #show destination screen
+        des_screen = self.screens.get(dest)
+
+        if(des_screen != None):
+            showFunc = des_screen.get("show")
+            showFunc()
+            self.currentScreen = dest
+        else:
+            raise Exception(f"Destination screen {cur} not found!")
+
+    def fade(self, widget : QWidget):
+        self.effect = QGraphicsOpacityEffect()
+        widget.setGraphicsEffect(self.effect)
+
+        self.animation = QPropertyAnimation(self.effect, b"opacity")
+        self.animation.setDuration(1000)
+        self.animation.setStartValue(1)
+        self.animation.setEndValue(0)
+        self.animation.start()
+
+    def unfade(self, widget : QWidget):
+        self.effect = QGraphicsOpacityEffect()
+        widget.setGraphicsEffect(self.effect)
+
+        self.animation = QPropertyAnimation(self.effect, b"opacity")
+        self.animation.setDuration(1000)
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+        self.animation.start()
 
     def plot_sensor_data(self, sensor_datas : pd.DataFrame):
         sensor_colors = {
@@ -551,41 +653,6 @@ class MainWindow(CustomMainWindow):
                 )
             )
 
-    def changeContent(self, dest):
-        cur = self.currentScreen
-
-        #cleanup last content
-        if(cur == "home"):
-            self.hideHomeContent()
-        elif(cur == "def-take-sample"):
-            self.hideDefaultTakeSampleContent()
-        elif(cur == "def-model-selection"):
-            self.hideDefaultModelSelectionContent()
-        elif(cur == "def-prediction-result"):
-            self.hideDefaultPredictionResultContent()
-        elif(cur == "cus-genose-setting"):
-            self.hideCustomGenoseSettingContent()
-
-        #show new content
-        if(dest == "home"):
-            self.showHomeContent()
-
-            if(self.isBotNavbarShown):
-                print("hello")
-                self.hideBotNavbar()
-
-            self.hideHeader()
-            self.hideFooter()
-
-        elif(dest == "def-take-sample"):
-            self.showDefaultTakeSampleContent()
-        elif(dest == "def-model-selection"):
-            self.showDefaultModelSelectionContent()
-        elif(dest == "def-prediction-result"):
-            self.showDefaultPredictionResultContent()
-        elif(dest == "cus-genose-setting"):
-            self.showCustomGenoseSettingContent()
-
     def deleteChilds(self, obj):
         if issubclass(obj.__class__, QLayout):
             for i in reversed(range(obj.count())):
@@ -595,6 +662,7 @@ class MainWindow(CustomMainWindow):
                 
                 layout = obj.layout()
                 layout.deleteLater()
+                
         elif issubclass(obj.__class__, QWidgetItem):
             widget = obj.widget()
             widget.deleteLater()
