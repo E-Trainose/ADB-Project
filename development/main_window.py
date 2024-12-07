@@ -325,7 +325,7 @@ class MainWindow(CustomMainWindow):
         self.homeButton.setSourcePixmap(self.home_pixmap)
         self.homeButton.clicked.connect(lambda: self.goToLaunch())
         self.homeButton.setToolTip("Kembali ke beranda")
-        self.resized.connect(lambda: self.homeButton.setGeometry(px(2), py(80), px(10), py(10)))
+        self.resized.connect(lambda: self.homeButton.setGeometry(px(2), py(82), px(10), py(10)))
 
         self.aboutButton = ClickableLabel(self.appPage)
         self.aboutButton.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -356,13 +356,13 @@ class MainWindow(CustomMainWindow):
         self.botNavNext.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.botNavNext.setSourcePixmap(self.botnav_next_pixmap)
         self.botNavNext.clicked.connect(lambda: self.navToNext())
-        self.resized.connect(lambda: self.botNavNext.setGeometry(px(85), py(80), px(10), py(10)))
+        self.resized.connect(lambda: self.botNavNext.setGeometry(px(85), py(85), px(10), py(10)))
 
         self.botNavPrev = ClickableLabel(self)
         self.botNavPrev.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.botNavPrev.setSourcePixmap(self.botnav_prev_pixmap)
         self.botNavPrev.clicked.connect(lambda: self.navToPrev())
-        self.resized.connect(lambda: self.botNavPrev.setGeometry(px(75), py(80), px(10), py(10)))
+        self.resized.connect(lambda: self.botNavPrev.setGeometry(px(75), py(85), px(10), py(10)))
         
         self.nextNav = ScreenNames.CUS_TAKE_RAW
         self.prevNav = ScreenNames.CUS_GENOSE_SETTING
@@ -377,7 +377,8 @@ class MainWindow(CustomMainWindow):
 
         self.headerVbox.addWidget(self.header)
 
-        self.footer = AutoFontLabel("FOOTER", self.fonts[1], "#FA6FC3", 3.5, self)
+        self.footer = AutoFontLabel("FOOTER", self.fonts[1], "#FA6FC3", 2.5, self, QSize(30, 10))
+        self.footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.footerVbox.addWidget(self.footer)
     
@@ -492,13 +493,13 @@ class MainWindow(CustomMainWindow):
         self.barHbox.deleteLater()
 
     def showDefaultModelSelectionContent(self):
-        self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
+        self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
         self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
 
-        self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
+        self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
         self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
 
-        self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, self, QSize(25, 10))
+        self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
         self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
 
         self.contentVbox.addWidget(self.svmButton)
@@ -595,25 +596,127 @@ class MainWindow(CustomMainWindow):
     def hideCustomFeatureSelectContent(self): 
         self.featureSelectLabel.deleteLater()
 
-    def showCustomAIModelContent(self): ...
+    def showCustomAIModelContent(self): 
+        self.importModelBtn = AutoFontContentButton("IMPORT MODEL", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
 
-    def hideCustomAIModelContent(self): ...
+        self.startTrainingBtn = AutoFontContentButton("START TRAINING", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
 
-    def showCustomAIEvaluateContent(self): ...
+        self.contentVbox.addWidget(self.importModelBtn)
+        self.contentVbox.addWidget(self.startTrainingBtn)
+
+        self.nextNav = ScreenNames.CUS_AI_EVALUATE
+        self.prevNav = ScreenNames.CUS_FEATURE_SELECTION
+
+    def hideCustomAIModelContent(self): 
+        self.importModelBtn.deleteLater()
+        self.startTrainingBtn.deleteLater()
+
+    def showCustomAIEvaluateContent(self): 
+        self.modelEvaluationLbl = AutoFontLabel("MODEL EVALUATION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
+        self.modelEvaluationLbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.modelEvaluation = AutoFontLabel("model accuracy is 1000%", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
+        self.modelEvaluation.setAlignment(Qt.AlignmentFlag.AlignJustify)
+
+        self.contentVbox.addWidget(self.modelEvaluationLbl)
+        self.contentVbox.addWidget(self.modelEvaluation)
+
+        self.nextNav = ScreenNames.CUS_TAKE_SAMPLE
+        self.prevNav = ScreenNames.CUS_AI_MODEL
     
-    def hideCustomAIEvaluateContent(self): ...
+    def hideCustomAIEvaluateContent(self): 
+        self.modelEvaluation.deleteLater()
+        self.modelEvaluationLbl.deleteLater()
 
-    def showCustomTakeSampleContent(self): ...
+    def showCustomTakeSampleContent(self): 
+        self.takeDataButton = AutoFontContentButton(text="TAKE DATA SAMPLE", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
 
-    def hideCustomTakeSampleContent(self): ...
+        self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
-    def showCustomModelSelectionContent(self): ...
+        self.comboxPortSelector = QComboBox()
+        self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
+        self.findPorts()
 
-    def hideCustomModelSelectionContent(self): ...
+        self.showHeader("DEFAULT")
 
-    def showCustomPredictionResultContent(self): ...
+        self.contentVbox.addWidget(self.takeDataButton)
+        self.contentVbox.addWidget(self.comboxPortSelector)
+
+        self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.pbar = QProgressBar(self)
+        sp = self.pbar.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        self.pbar.setSizePolicy(sp)
+        self.pbar.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.pbar.setValue(0)
+
+        self.barHbox = QHBoxLayout()
+
+        self.barHbox.addItem(self.spacer1)
+        self.barHbox.addWidget(self.pbar)
+        self.barHbox.addItem(self.spacer2)
+
+        self.contentVbox.addLayout(self.barHbox)
+
+        self.nextNav = ScreenNames.CUS_MODEL_SELECTION
+        self.prevNav = ScreenNames.CUS_AI_EVALUATE
+
+    def hideCustomTakeSampleContent(self):
+        self.barHbox.removeItem(self.spacer1)
+        self.barHbox.removeItem(self.spacer2)
+        self.takeDataButton.deleteLater()
+        self.comboxPortSelector.deleteLater()
+        self.pbar.deleteLater()
+        self.barHbox.deleteLater()
+
+    def showCustomModelSelectionContent(self): 
+        def createAIButtons():
+            aiModelButtons : AutoFontContentButton = []
+            
+            for model_key in AI_MODEL_DICT.keys():
+                button = AutoFontContentButton(model_key, self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
+                button.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT[model_key]))
+
+                aiModelButtons.append(button)
+
+            return aiModelButtons
+
+        self.aiModelButtons = createAIButtons()
+
+        # self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
+        # self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
+
+        # self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
+        # self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
+
+        # self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
+        # self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
+
+        for btn in self.aiModelButtons:
+            self.contentVbox.addWidget(btn)
+
+        self.nextNav = ScreenNames.CUS_PREDICTION_RESULT
+        self.prevNav = ScreenNames.CUS_TAKE_SAMPLE
+
+    def hideCustomModelSelectionContent(self): 
+        for btn in self.aiModelButtons:
+            btn.deleteLater()
+
+    def showCustomPredictionResultContent(self): 
+        self.sensorGraph = PlotWidget(self.appPage)
+        
+        self.contentVbox.addWidget(self.sensorGraph)
+
+        self.showFooter("PREDICTION RESULT")
+
+        self.nextNav = ScreenNames.CUS_PREDICTION_RESULT
+        self.prevNav = ScreenNames.CUS_MODEL_SELECTION
     
-    def hideCustomPredictionResultContent(self): ...
+    def hideCustomPredictionResultContent(self): 
+        self.sensorGraph.deleteLater()
+        self.hideFooter()
 
     def changeContent(self, dest):
         cur = self.currentScreen
