@@ -355,19 +355,31 @@ class MainWindow(CustomMainWindow):
         self.botNavNext = ClickableLabel(self)
         self.botNavNext.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.botNavNext.setSourcePixmap(self.botnav_next_pixmap)
-        self.botNavNext.clicked.connect(lambda: print("next"))
+        self.botNavNext.clicked.connect(lambda: self.navToNext())
         self.resized.connect(lambda: self.botNavNext.setGeometry(px(85), py(80), px(10), py(10)))
 
         self.botNavPrev = ClickableLabel(self)
         self.botNavPrev.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.botNavPrev.setSourcePixmap(self.botnav_prev_pixmap)
-        self.botNavPrev.clicked.connect(lambda: print("back"))
+        self.botNavPrev.clicked.connect(lambda: self.navToPrev())
         self.resized.connect(lambda: self.botNavPrev.setGeometry(px(75), py(80), px(10), py(10)))
         
+        self.nextNav = ScreenNames.CUS_TAKE_RAW
+        self.prevNav = ScreenNames.CUS_GENOSE_SETTING
+
         self.botNavNext.hide()
         self.botNavPrev.hide()
 
         self.isBotNavbarShown = False
+        
+        self.header = AutoFontLabel("HEADER", self.fonts[1], "#FA6FC3", 3.5, self, QSize(20, 10))
+        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.headerVbox.addWidget(self.header)
+
+        self.footer = AutoFontLabel("FOOTER", self.fonts[1], "#FA6FC3", 3.5, self)
+
+        self.footerVbox.addWidget(self.footer)
     
     def findPorts(self):
         ports = serial.tools.list_ports.comports()
@@ -384,28 +396,25 @@ class MainWindow(CustomMainWindow):
         self.changeContent(ScreenNames.LAUNCH)
         self.currentScreen = ScreenNames.LAUNCH
 
-    def showHeader(self, text):
-        self.header = AutoFontLabel(text, self.fonts[1], "#FA6FC3", 3.5, self, QSize(20, 10))
-        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    def navToNext(self):
+        self.changeContent(self.nextNav)
 
-        self.headerVbox.addWidget(self.header)
+    def navToPrev(self):
+        self.changeContent(self.prevNav)
+
+    def showHeader(self, text):
+        self.header.setText(text)
+        self.header.show()
 
     def hideHeader(self):
-        try:
-            self.header.deleteLater()
-        except AttributeError as e:
-            print(e)
+        self.header.hide()
     
     def showFooter(self, text):
-        self.footer = AutoFontLabel(text, self.fonts[1], "#FA6FC3", 3.5, self)
-        
-        self.footerVbox.addWidget(self.footer)
+        self.footer.setText(text)
+        self.footer.show()
 
     def hideFooter(self):
-        try:
-            self.footer.deleteLater()
-        except AttributeError as e:
-            print(e)
+        self.footer.hide()
 
     def showBotNavbar(self):
         self.isBotNavbarShown = True
@@ -544,22 +553,47 @@ class MainWindow(CustomMainWindow):
         self.contentVbox.addLayout(self.settingHbox)
         self.contentVbox.addLayout(self.applyVbox)
 
+        self.nextNav = ScreenNames.CUS_TAKE_RAW
+        self.prevNav = ScreenNames.CUS_GENOSE_SETTING
+
         self.showBotNavbar()
 
     def hideCustomGenoseSettingContent(self):
         self.clearContentVbox()
 
-    def showCustomTakeDatasetContent(self): ...
+    def showCustomTakeDatasetContent(self):
+        self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
 
-    def hideCustomTakeDatasetContent(self): ...
+        self.contentVbox.addWidget(self.takeRawDatasetBtn)
 
-    def showCustomPreprocessingContent(self): ...
+        self.nextNav = ScreenNames.CUS_PREPROCESSING
+        self.prevNav = ScreenNames.CUS_GENOSE_SETTING
 
-    def hideCustomPreprocessingContent(self): ...
+    def hideCustomTakeDatasetContent(self): 
+        self.takeRawDatasetBtn.deleteLater()
 
-    def showCustomFeatureSelectContent(self): ...
+    def showCustomPreprocessingContent(self): 
+        self.preprocessingBtn = AutoFontContentButton("PREPROCESSING", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
 
-    def hideCustomFeatureSelectContent(self): ...
+        self.contentVbox.addWidget(self.preprocessingBtn)
+
+        self.nextNav = ScreenNames.CUS_FEATURE_SELECTION
+        self.prevNav = ScreenNames.CUS_TAKE_RAW
+
+    def hideCustomPreprocessingContent(self): 
+        self.preprocessingBtn.deleteLater()
+
+    def showCustomFeatureSelectContent(self): 
+        self.featureSelectLabel = AutoFontLabel("FEATURE SELECTION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
+        self.featureSelectLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.contentVbox.addWidget(self.featureSelectLabel)
+
+        self.nextNav = ScreenNames.CUS_AI_MODEL
+        self.prevNav = ScreenNames.CUS_PREPROCESSING
+
+    def hideCustomFeatureSelectContent(self): 
+        self.featureSelectLabel.deleteLater()
 
     def showCustomAIModelContent(self): ...
 
