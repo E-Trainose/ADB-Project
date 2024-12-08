@@ -1,8 +1,8 @@
 import sys, os
 from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect, QPropertyAnimation
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidgetItem, QGraphicsOpacityEffect
-from PyQt5.QtWidgets import QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QLineEdit, QLayoutItem 
-from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar
+from PyQt5.QtWidgets import QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QLineEdit, QLayoutItem
+from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar, QScrollArea, QFileDialog
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase, QColor, QPen
 from pyqtgraph import PlotDataItem, PlotWidget
 import serial.tools.list_ports
@@ -151,6 +151,9 @@ class AutoFontContentButton(QPushButton):
                 background-color: {color}; 
                 padding: 10px;
             }}
+            QPushButton:checked {{
+                background-color: gray; 
+            }}
             QPushButton:pressed {{
                 background-color: gray; 
             }}
@@ -284,6 +287,8 @@ class MainWindow(CustomMainWindow):
             ScreenNames.CUS_MODEL_SELECTION   : { "show" : self.showCustomModelSelectionContent,       "hide" : self.hideCustomModelSelectionContent       },
             ScreenNames.CUS_PREDICTION_RESULT : { "show" : self.showCustomPredictionResultContent,     "hide" : self.hideCustomPredictionResultContent     },
         }
+
+        self.features = {"SKEW" : False, "KURTOSIS" : False, "MIN" : False, "MAX" : False, "MEAN" : False}
 
         self.setStyleSheet("MainWindow { background-color : #537EFF; }")
         self.resize(WIDTH, HEIGHT)
@@ -585,19 +590,75 @@ class MainWindow(CustomMainWindow):
         self.preprocessingBtn.deleteLater()
 
     def showCustomFeatureSelectContent(self): 
-        self.featureSelectLabel = AutoFontLabel("FEATURE SELECTION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
+        self.featureSelectLabel = AutoFontLabel("FEATURE SELECTION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,6))
         self.featureSelectLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.contentVbox.addWidget(self.featureSelectLabel)
+        self.featureSelectLabelBox = QHBoxLayout()
+        self.featureSelectLabelBox.addWidget(self.featureSelectLabel)
+
+        self.featuresWidget = QWidget(self)
+        self.featureScrollVbox = QVBoxLayout(self.featuresWidget)
+        self.featureScrollVbox.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        self.featureBtns : list[AutoFontContentButton] = []
+        for fe in self.features.keys():
+            feature = AutoFontContentButton(fe, self.fonts[1], "#FA6FC3", 1.0, QSize(20,8), self)
+            feature.setCheckable(True)
+            feature.setChecked(self.features[fe])
+
+            self.featureBtns.append(feature)
+            self.featureScrollVbox.addWidget(feature)
+
+        self.featureScroll = QScrollArea(self)
+        
+        sp = self.featureScroll.sizePolicy()
+        sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        
+        self.featureScroll.setWidgetResizable(True)
+        self.featureScroll.setSizePolicy(sp)
+        self.featureScroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.featureScroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.featureScroll.__onResize = lambda : self.featureScroll.setFixedSize(QSize(px(30),py(40)))
+        self.featureScroll.__onResize()
+        self.resized.connect(self.featureScroll.__onResize)
+        self.featureScroll.setStyleSheet("QScrollArea { background-color:red; }")
+        self.featuresWidget.setStyleSheet("QScrollArea { background-color:green; }")
+
+        self.featureScroll.setWidget(self.featuresWidget)
+
+        # self.contentVbox.addWidget(self.featureSelectLabel)
+        self.contentVbox.addLayout(self.featureSelectLabelBox)
+        self.contentVbox.addWidget(self.featureScroll)
 
         self.nextNav = ScreenNames.CUS_AI_MODEL
         self.prevNav = ScreenNames.CUS_PREPROCESSING
 
     def hideCustomFeatureSelectContent(self): 
         self.featureSelectLabel.deleteLater()
+        self.featureSelectLabelBox.deleteLater()
+        for fe in self.featureBtns:
+            key = fe.text()
+            self.features[key] = fe.isChecked()
+            fe.deleteLater()
+        self.featuresWidget.deleteLater()
+        self.resized.disconnect(self.featureScroll.__onResize)
+        self.featureScroll.deleteLater()
 
     def showCustomAIModelContent(self): 
+        def importModel():
+            dir_ = QFileDialog(self)
+
+            def restrict(dir):
+                print(dir)
+                # dir_.setDirectory("G:\\")
+
+            dir_.directoryEntered.connect(lambda x : restrict(x))
+            dir_.setNameFilter("Python file (*.py)")
+            dir_.exec_()
+
         self.importModelBtn = AutoFontContentButton("IMPORT MODEL", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
+        self.importModelBtn.clicked.connect(lambda : importModel())
 
         self.startTrainingBtn = AutoFontContentButton("START TRAINING", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
 
@@ -637,8 +698,6 @@ class MainWindow(CustomMainWindow):
         self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
         self.findPorts()
 
-        self.showHeader("DEFAULT")
-
         self.contentVbox.addWidget(self.takeDataButton)
         self.contentVbox.addWidget(self.comboxPortSelector)
 
@@ -673,7 +732,7 @@ class MainWindow(CustomMainWindow):
 
     def showCustomModelSelectionContent(self): 
         def createAIButtons():
-            aiModelButtons : AutoFontContentButton = []
+            aiModelButtons : list[AutoFontContentButton] = []
             
             for model_key in AI_MODEL_DICT.keys():
                 button = AutoFontContentButton(model_key, self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
