@@ -17,6 +17,8 @@ class AiStarter:
 class BaseClassifier:
     def predict(self, datas : pd.DataFrame):
         raise NotImplementedError()
+    def train(self):
+        raise NotImplementedError()
 
 class BasePreproccessor:
     def preproccess(self, datas):

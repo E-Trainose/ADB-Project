@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLayout, QSpacerItem, Q
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QPaintEvent, QFontDatabase, QColor, QPen
 from pyqtgraph import PlotDataItem, PlotWidget
 import serial.tools.list_ports
-# from graph_canvas import GraphCanvas
 import PyQt5.sip as sip
 import config
 import pandas as pd
@@ -463,7 +462,6 @@ class MainWindow(CustomMainWindow):
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
         self.comboxPortSelector = QComboBox()
-        self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
         self.findPorts()
 
         self.showHeader("DEFAULT")
@@ -648,12 +646,6 @@ class MainWindow(CustomMainWindow):
     def showCustomAIModelContent(self): 
         def importModel():
             dir_ = QFileDialog(self)
-
-            def restrict(dir):
-                print(dir)
-                # dir_.setDirectory("G:\\")
-
-            dir_.directoryEntered.connect(lambda x : restrict(x))
             dir_.setNameFilter("Python file (*.py)")
             dir_.exec_()
 
@@ -695,7 +687,6 @@ class MainWindow(CustomMainWindow):
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
         self.comboxPortSelector = QComboBox()
-        self.comboxPortSelector.setStyleSheet("QComboBox { margin:20; }")
         self.findPorts()
 
         self.contentVbox.addWidget(self.takeDataButton)
