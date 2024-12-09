@@ -127,7 +127,7 @@ class AutoFontLabel(QLabel):
         return super().deleteLater()
     
 class AutoFontContentButton(QPushButton):
-    def __init__(self, text : str = "", font_idx : int = None, color_hex : str = "#FA6FC3", scale : float = 1.0, percentSize = QSize(20, 10), parent : CustomMainWindow | None = None):
+    def __init__(self, text : str = "", font_idx : int = None, color_hex : str = "#FA6FC3", scale : float = 1.0, percentSize = QSize(20, 10), parent : CustomMainWindow = None):
         super().__init__(text, parent)
 
         self.__parent = parent
