@@ -13,6 +13,7 @@ class AppWindow(MainWindow):
 
         self.take_data_sig.connect(self.collect_data_with_loading)
         self.model_select_sig.connect(self.model_predict_with_loading)
+        self.ai_model_file_imported.connect(self.ai_model_file_import)
 
         self.genose = Genose()
         
@@ -38,6 +39,17 @@ class AppWindow(MainWindow):
     def model_predict_with_loading(self, model_id):
         self.genose.setAIModel(model_id)
         self.genose.startPredict()
+
+    def ai_model_file_import(self, model_filepath):
+        module = self.genose.loadModelModuleFromFile(model_filepath, "model")
+
+        if(module == None):
+            self.notifyPopin("Model invalid!")
+            self.notification.setBgColor("red")
+        else:
+            self.notifyPopin("Model loaded successfully")
+            self.notification.setBgColor("blue")
+
 
     def on_data_collection_finished(self):
         self.takeDataButton.setDisabled(False)

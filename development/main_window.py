@@ -1,5 +1,5 @@
 import sys, os
-from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect, QPropertyAnimation
+from PyQt5.QtCore import Qt, QSize, QMargins, pyqtSignal, QRect, QPropertyAnimation, QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidgetItem, QGraphicsOpacityEffect
 from PyQt5.QtWidgets import QSizePolicy, QLabel, QAbstractButton, QGraphicsDropShadowEffect, QLineEdit, QLayoutItem
 from PyQt5.QtWidgets import QPushButton, QStackedWidget, QLayout, QSpacerItem, QWidget, QComboBox, QProgressBar, QScrollArea, QFileDialog
@@ -88,18 +88,10 @@ class AutoFontLabel(QLabel):
         self.__parent = parent
         self.percentSize = percentSize
         self.fontScale = scale
-
-        stylesheet = '''
-            QLabel {{
-                border-radius : 10px; 
-                background-color: {color}; 
-                padding: 10px;
-            }}
-            '''.format(color=color_hex)
         
         font = QFont(QFontDatabase.applicationFontFamilies(font_idx)[0])
 
-        self.setStyleSheet(stylesheet)
+        self.setBgColor(color_hex)
         self.setFont(font)
 
         # responsive settings
@@ -110,6 +102,17 @@ class AutoFontLabel(QLabel):
         self.__parent.resized.connect(self.onResize)
 
         self.onResize()
+
+    def setBgColor(self, color_hex):
+        stylesheet = '''
+            QLabel {{
+                border-radius : 10px; 
+                background-color: {color}; 
+                padding: 10px;
+            }}
+            '''.format(color=color_hex)
+        
+        self.setStyleSheet(stylesheet)
 
     def onResize(self):
         self.setFixedSize(px(self.percentSize.width()), py(self.percentSize.height()))
@@ -264,6 +267,7 @@ class ScreenNames:
 class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
     model_select_sig = pyqtSignal(int)
+    ai_model_file_imported = pyqtSignal(str)
 
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
@@ -385,6 +389,13 @@ class MainWindow(CustomMainWindow):
         self.footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.footerVbox.addWidget(self.footer)
+
+        self.notification = AutoFontLabel("Notification", self.fonts[2], "#FA6FC3", 1.5, self, QSize(40, 10))
+        self.notification.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.notification.clicked.connect(lambda: print("notification clicked"))
+        self.notification.setToolTip("Notification")
+        self.resized.connect(lambda: self.notification.setGeometry(px(30), py(5), px(10), py(10)))
+        self.opacity0(self.notification)
     
     def findPorts(self):
         ports = serial.tools.list_ports.comports()
@@ -566,7 +577,7 @@ class MainWindow(CustomMainWindow):
         self.clearContentVbox()
 
     def showCustomTakeDatasetContent(self):
-        self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
+        self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
 
         self.contentVbox.addWidget(self.takeRawDatasetBtn)
 
@@ -577,7 +588,7 @@ class MainWindow(CustomMainWindow):
         self.takeRawDatasetBtn.deleteLater()
 
     def showCustomPreprocessingContent(self): 
-        self.preprocessingBtn = AutoFontContentButton("PREPROCESSING", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
+        self.preprocessingBtn = AutoFontContentButton("PREPROCESSING", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
 
         self.contentVbox.addWidget(self.preprocessingBtn)
 
@@ -588,7 +599,7 @@ class MainWindow(CustomMainWindow):
         self.preprocessingBtn.deleteLater()
 
     def showCustomFeatureSelectContent(self): 
-        self.featureSelectLabel = AutoFontLabel("FEATURE SELECTION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,6))
+        self.featureSelectLabel = AutoFontLabel("FEATURE SELECTION", self.fonts[1], "#FA6FC3", 2.0, self, QSize(25,6))
         self.featureSelectLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.featureSelectLabelBox = QHBoxLayout()
@@ -600,7 +611,7 @@ class MainWindow(CustomMainWindow):
 
         self.featureBtns : list[AutoFontContentButton] = []
         for fe in self.features.keys():
-            feature = AutoFontContentButton(fe, self.fonts[1], "#FA6FC3", 1.0, QSize(20,8), self)
+            feature = AutoFontContentButton(fe, self.fonts[1], "#FA6FC3", 2.0, QSize(20,8), self)
             feature.setCheckable(True)
             feature.setChecked(self.features[fe])
 
@@ -645,14 +656,13 @@ class MainWindow(CustomMainWindow):
 
     def showCustomAIModelContent(self): 
         def importModel():
-            dir_ = QFileDialog(self)
-            dir_.setNameFilter("Python file (*.py)")
-            dir_.exec_()
+            dir_ = QFileDialog.getOpenFileName(self, "Select python file", None, "Python file (*py)")
+            self.ai_model_file_imported.emit(dir_[0])
 
-        self.importModelBtn = AutoFontContentButton("IMPORT MODEL", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
+        self.importModelBtn = AutoFontContentButton("IMPORT MODEL", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
         self.importModelBtn.clicked.connect(lambda : importModel())
 
-        self.startTrainingBtn = AutoFontContentButton("START TRAINING", self.fonts[1], "#FA6FC3", 1.0, QSize(25,10), self)
+        self.startTrainingBtn = AutoFontContentButton("START TRAINING", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
 
         self.contentVbox.addWidget(self.importModelBtn)
         self.contentVbox.addWidget(self.startTrainingBtn)
@@ -665,7 +675,7 @@ class MainWindow(CustomMainWindow):
         self.startTrainingBtn.deleteLater()
 
     def showCustomAIEvaluateContent(self): 
-        self.modelEvaluationLbl = AutoFontLabel("MODEL EVALUATION", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
+        self.modelEvaluationLbl = AutoFontLabel("MODEL EVALUATION", self.fonts[1], "#FA6FC3", 2.0, self, QSize(25,10))
         self.modelEvaluationLbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.modelEvaluation = AutoFontLabel("model accuracy is 1000%", self.fonts[1], "#FA6FC3", 1.0, self, QSize(25,10))
@@ -735,15 +745,6 @@ class MainWindow(CustomMainWindow):
 
         self.aiModelButtons = createAIButtons()
 
-        # self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        # self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
-
-        # self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        # self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
-
-        # self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        # self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
-
         for btn in self.aiModelButtons:
             self.contentVbox.addWidget(btn)
 
@@ -789,6 +790,17 @@ class MainWindow(CustomMainWindow):
             self.currentScreen = dest
         else:
             raise Exception(f"Destination screen {cur} not found!")
+
+    def opacity0(self, widget : QWidget):
+        self.effect = QGraphicsOpacityEffect()
+        self.effect.setOpacity(0.0)
+        widget.setGraphicsEffect(self.effect)
+
+    def notifyPopin(self, text):
+        self.timer = QTimer()
+        self.notification.setText(text)
+        self.unfade(self.notification)
+        self.timer.singleShot(2000, lambda: self.fade(self.notification))
 
     def fade(self, widget : QWidget):
         self.effect = QGraphicsOpacityEffect()

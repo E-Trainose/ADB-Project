@@ -168,6 +168,13 @@ class Genose(QObject):
         self.predictions = predictions
         self.predict_finished.emit(SUCCESS)
 
+    def loadModelModuleFromFile(self, path : str, name : str):
+        ai_module = load_module(source=path, module_name=name)
+            
+        if(self.verifyModelModule(ai_module)):
+            return ai_module
+        else:
+            return None
     
     def loadModelsFromFolder(self):
         customs, defaults = readModels()
@@ -175,17 +182,33 @@ class Genose(QObject):
         customAiDict = {}
 
         for customk in customs.keys():
-            print(f"reading : {customk}")
             custom_ai_module = load_module(source=customs[customk]["classifier"], module_name=customk)
+            
+            if(self.verifyModelModule(custom_ai_module)):
+                customAiDict[customk] = {}
+                customAiDict[customk]["module"] = custom_ai_module
+
+    def verifyModelModule(self, module) -> bool:
+        try:
+            predictor : BaseClassifier = module.Classifier()
+            
+            try:
+                predictor.predict([])
+            except NotImplementedError as e:
+                # print("predict method not implemented yet")
+                raise AttributeError()
 
             try:
-                predictor : BaseClassifier = custom_ai_module.Classifier()
-                predictor.train()
-                print(custom_ai_module.Classifier)
-                
-            except AttributeError as e:
-                print("Python file not in correct format")
-
+                predictor.train([])
+            except NotImplementedError as e:
+                # print("train method not implemented yet")
+                raise AttributeError()
+            
+        except AttributeError as e:
+            # print("Python file not in correct format")
+            return False
+        
+        return True
 
     def setAIModel(self, model_id : str):
         model = None
