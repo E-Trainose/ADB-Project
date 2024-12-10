@@ -74,10 +74,10 @@ def load_module(source, module_name=None):
 
     return module
 
-def read_files(dir):
+def read_files(dir : str):
     results = {}
     for dirpath, dnames, fnames in os.walk(dir):
-        name = dirpath.replace(dir, "").replace("\\", "").upper()
+        name = dirpath.replace(dir, "").replace("\\", "").replace("/", "").upper()
 
         if(dirpath.find("__pycache__") > -1):
             continue
@@ -90,13 +90,10 @@ def read_files(dir):
         for f in fnames:
             path = os.path.join(dirpath, f)
             if(f.find("classifier") > -1):
-                # print(f"classifier : {path}")
                 result["classifier"] = path
             elif(f.find("model") > -1):
-                # print(f"model : {path}")
                 result["model"] = path
             elif(f.find("label_encoder") > -1):
-                # print(f"label_encoder : {path}")
                 result["label_encoder"] = path
 
         results[name] = result
@@ -156,6 +153,9 @@ class Genose(QObject):
         self.sensorData = None
         self.predictions = []
 
+        self.DEFAULT_AI_DICT = AI_MODEL_DICT
+        self.CUSTOM_AI_DICT = {}
+
     def __onDataCollectionFinish(self, datas : pd.DataFrame):
         self.sensorData = datas
         self.data_collection_finished.emit(SUCCESS)
@@ -188,24 +188,32 @@ class Genose(QObject):
                 customAiDict[customk] = {}
                 customAiDict[customk]["module"] = custom_ai_module
 
+        self.CUSTOM_AI_DICT = customAiDict
+
     def verifyModelModule(self, module) -> bool:
         try:
             predictor : BaseClassifier = module.Classifier()
             
             try:
-                predictor.predict([])
-            except NotImplementedError as e:
+                predict = predictor.predict
+            except AttributeError as e:
                 # print("predict method not implemented yet")
-                raise AttributeError()
+                raise AttributeError("predict")
 
             try:
-                predictor.train([])
-            except NotImplementedError as e:
+                train = predictor.train
+            except AttributeError as e:
                 # print("train method not implemented yet")
-                raise AttributeError()
+                raise AttributeError("train")
+            
+            try:
+                save = predictor.save
+            except AttributeError as e:
+                # print("train method not implemented yet")
+                raise AttributeError("save")
             
         except AttributeError as e:
-            # print("Python file not in correct format")
+            print(f"Python file not in correct format : undefined function {e}")
             return False
         
         return True
@@ -213,10 +221,13 @@ class Genose(QObject):
     def setAIModel(self, model_id : str):
         model = None
 
-        if(model_id in AI_MODEL_DICT.keys()):
-            model = AI_MODEL_DICT[model_id]["model"]()
-            paths = AI_MODEL_DICT[model_id]["paths"]
+        if(model_id in self.DEFAULT_AI_DICT.keys()):
+            model = self.DEFAULT_AI_DICT[model_id]["model"]()
+            paths = self.DEFAULT_AI_DICT[model_id]["paths"]
             model.load(model_path= paths["model"], label_encoder_path= paths["label_encoder"])
+        elif(model_id in self.CUSTOM_AI_DICT.keys()):
+            modelModule = self.CUSTOM_AI_DICT[model_id]["module"]
+            model : BaseClassifier = modelModule.Classifier()
         else:
             raise Exception("Model ID invalid")
         

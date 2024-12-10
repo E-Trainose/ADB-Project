@@ -9,7 +9,6 @@ import serial.tools.list_ports
 import PyQt5.sip as sip
 import config
 import pandas as pd
-from genose import AI_MODEL_DICT
 import typing
 from enum import Enum
 
@@ -266,7 +265,7 @@ class ScreenNames:
 
 class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
-    model_select_sig = pyqtSignal(int)
+    model_select_sig = pyqtSignal(str)
     ai_model_file_imported = pyqtSignal(str)
 
     def __init__(self, parent = ..., flags = ...):
@@ -292,6 +291,8 @@ class MainWindow(CustomMainWindow):
         }
 
         self.features = {"SKEW" : False, "KURTOSIS" : False, "MIN" : False, "MAX" : False, "MEAN" : False}
+
+        self.aiModels : list[str] = []
 
         self.setStyleSheet("MainWindow { background-color : #537EFF; }")
         self.resize(WIDTH, HEIGHT)
@@ -508,13 +509,13 @@ class MainWindow(CustomMainWindow):
 
     def showDefaultModelSelectionContent(self):
         self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        self.svmButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["SVM"]))
+        self.svmButton.clicked.connect(lambda : self.model_select_sig.emit("SVM"))
 
         self.rfButton = AutoFontContentButton("RANDOM FOREST", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        self.rfButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["RF"]))
+        self.rfButton.clicked.connect(lambda : self.model_select_sig.emit("RF"))
 
         self.nnButton = AutoFontContentButton("NN", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-        self.nnButton.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT["NN"]))
+        self.nnButton.clicked.connect(lambda : self.model_select_sig.emit("NN"))
 
         self.contentVbox.addWidget(self.svmButton)
         self.contentVbox.addWidget(self.rfButton)
@@ -609,15 +610,6 @@ class MainWindow(CustomMainWindow):
         self.featureScrollVbox = QVBoxLayout(self.featuresWidget)
         self.featureScrollVbox.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        self.featureBtns : list[AutoFontContentButton] = []
-        for fe in self.features.keys():
-            feature = AutoFontContentButton(fe, self.fonts[1], "#FA6FC3", 2.0, QSize(20,8), self)
-            feature.setCheckable(True)
-            feature.setChecked(self.features[fe])
-
-            self.featureBtns.append(feature)
-            self.featureScrollVbox.addWidget(feature)
-
         self.featureScroll = QScrollArea(self)
         
         sp = self.featureScroll.sizePolicy()
@@ -635,6 +627,15 @@ class MainWindow(CustomMainWindow):
         self.featuresWidget.setStyleSheet("QScrollArea { background-color:green; }")
 
         self.featureScroll.setWidget(self.featuresWidget)
+
+        self.featureBtns : list[AutoFontContentButton] = []
+        for fe in self.features.keys():
+            feature = AutoFontContentButton(fe, self.fonts[1], "#FA6FC3", 2.0, QSize(20,8), self)
+            feature.setCheckable(True)
+            feature.setChecked(self.features[fe])
+
+            self.featureBtns.append(feature)
+            self.featureScrollVbox.addWidget(feature)
 
         # self.contentVbox.addWidget(self.featureSelectLabel)
         self.contentVbox.addLayout(self.featureSelectLabelBox)
@@ -732,21 +733,42 @@ class MainWindow(CustomMainWindow):
         self.barHbox.deleteLater()
 
     def showCustomModelSelectionContent(self): 
-        def createAIButtons():
-            aiModelButtons : list[AutoFontContentButton] = []
-            
-            for model_key in AI_MODEL_DICT.keys():
-                button = AutoFontContentButton(model_key, self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
-                button.clicked.connect(lambda : self.model_select_sig.emit(AI_MODEL_DICT[model_key]))
+        self.aiModelButtons = []
 
-                aiModelButtons.append(button)
+        for i in range(0, len(self.aiModels)):
+            model_key = self.aiModels[i]
+            button = AutoFontContentButton(model_key, self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
 
-            return aiModelButtons
+            button.clicked.connect(lambda checked, m=model_key: self.model_select_sig.emit(m))
 
-        self.aiModelButtons = createAIButtons()
+            self.aiModelButtons.append(button)
+
+        self.modelsWidget = QWidget(self)
+        self.modelScrollVbox = QVBoxLayout(self.modelsWidget)
+        self.modelScrollVbox.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        self.modelScroll = QScrollArea(self)
+        
+        sp = self.modelScroll.sizePolicy()
+        sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        
+        self.modelScroll.setWidgetResizable(True)
+        self.modelScroll.setSizePolicy(sp)
+        self.modelScroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.modelScroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.modelScroll.__onResize = lambda : self.modelScroll.setFixedSize(QSize(px(30),py(40)))
+        self.modelScroll.__onResize()
+        self.resized.connect(self.modelScroll.__onResize)
+        self.modelScroll.setStyleSheet("QScrollArea { background-color:red; }")
+        self.modelsWidget.setStyleSheet("QScrollArea { background-color:green; }")
+
+        self.modelScroll.setWidget(self.modelsWidget)
 
         for btn in self.aiModelButtons:
-            self.contentVbox.addWidget(btn)
+            self.modelScrollVbox.addWidget(btn)
+
+        self.contentVbox.addWidget(self.modelScroll)
 
         self.nextNav = ScreenNames.CUS_PREDICTION_RESULT
         self.prevNav = ScreenNames.CUS_TAKE_SAMPLE
@@ -754,6 +776,10 @@ class MainWindow(CustomMainWindow):
     def hideCustomModelSelectionContent(self): 
         for btn in self.aiModelButtons:
             btn.deleteLater()
+
+        self.modelsWidget.deleteLater()
+        self.resized.disconnect(self.modelScroll.__onResize)
+        self.modelScroll.deleteLater()
 
     def showCustomPredictionResultContent(self): 
         self.sensorGraph = PlotWidget(self.appPage)

@@ -19,6 +19,8 @@ class BaseClassifier:
         raise NotImplementedError()
     def train(self, datas : pd.DataFrame):
         raise NotImplementedError()
+    def save(self, path : str):
+        raise NotImplementedError()
 
 class BasePreproccessor:
     def preproccess(self, datas):
@@ -182,6 +184,7 @@ class PredictionThread(QThread):
     def run(self):
         try:
             predictions = self.model.predict(self.datas)
+            predictions = np.array(predictions)
             print(predictions)
         
         except Exception as e:

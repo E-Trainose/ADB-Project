@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 
-from genose import Genose, AI_MODEL_DICT, PREDICT_RESULT_DICT
+from genose import Genose, PREDICT_RESULT_DICT
 
 from main_window import MainWindow
 
@@ -16,6 +16,13 @@ class AppWindow(MainWindow):
         self.ai_model_file_imported.connect(self.ai_model_file_import)
 
         self.genose = Genose()
+        self.genose.loadModelsFromFolder()
+
+        for mdl in self.genose.DEFAULT_AI_DICT.keys():
+            self.aiModels.append(mdl)
+
+        for mdl in self.genose.CUSTOM_AI_DICT.keys():
+            self.aiModels.append(mdl)
         
         self.genose.data_collection_finished.connect(self.on_data_collection_finished)
         self.genose.data_collection_progress.connect(self.on_data_collection_progress)
@@ -36,7 +43,8 @@ class AppWindow(MainWindow):
 
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
 
-    def model_predict_with_loading(self, model_id):
+    def model_predict_with_loading(self, model_id : str):
+        print(f"Predicting using {model_id}")
         self.genose.setAIModel(model_id)
         self.genose.startPredict()
 
