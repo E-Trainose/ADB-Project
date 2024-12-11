@@ -31,7 +31,8 @@ class AppWindow(MainWindow):
     def collect_data_with_loading(self):
         print("Collecting data")
         # Retrieve the user input
-        selectedPort = self.comboxPortSelector.currentText()
+        # selectedPort = self.comboxPortSelector.currentText()
+        selectedPort = 'COM3'
         # selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
         selectAmount = 5
 

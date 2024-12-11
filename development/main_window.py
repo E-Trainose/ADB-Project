@@ -473,13 +473,13 @@ class MainWindow(CustomMainWindow):
         # self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
-        self.comboxPortSelector = QComboBox()
-        self.findPorts()
+        # self.comboxPortSelector = QComboBox()
+        # self.findPorts()
 
         self.showHeader("DEFAULT")
 
         self.contentVbox.addWidget(self.takeDataButton)
-        self.contentVbox.addWidget(self.comboxPortSelector)
+        # self.contentVbox.addWidget(self.comboxPortSelector)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -503,7 +503,7 @@ class MainWindow(CustomMainWindow):
         self.barHbox.removeItem(self.spacer1)
         self.barHbox.removeItem(self.spacer2)
         self.takeDataButton.deleteLater()
-        self.comboxPortSelector.deleteLater()
+        # self.comboxPortSelector.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
 
@@ -697,11 +697,11 @@ class MainWindow(CustomMainWindow):
 
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
-        self.comboxPortSelector = QComboBox()
-        self.findPorts()
+        # self.comboxPortSelector = QComboBox()
+        # self.findPorts()
 
         self.contentVbox.addWidget(self.takeDataButton)
-        self.contentVbox.addWidget(self.comboxPortSelector)
+        # self.contentVbox.addWidget(self.comboxPortSelector)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -728,7 +728,7 @@ class MainWindow(CustomMainWindow):
         self.barHbox.removeItem(self.spacer1)
         self.barHbox.removeItem(self.spacer2)
         self.takeDataButton.deleteLater()
-        self.comboxPortSelector.deleteLater()
+        # self.comboxPortSelector.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
 
