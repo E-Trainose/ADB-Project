@@ -19,6 +19,7 @@ class AppWindow(MainWindow):
         self.take_data_sig.connect(self.collect_data_with_loading)
         self.model_select_sig.connect(self.model_predict_with_loading)
         self.ai_model_file_imported.connect(self.ai_model_file_import)
+        self.inhale_flush_applied.connect(self.on_inhale_flush_applied)
 
         self.genose = Genose()
         self.genose.loadModelsFromFolder()
@@ -36,12 +37,14 @@ class AppWindow(MainWindow):
         self.genose.data_collection_progress.connect(self.on_data_collection_progress)
         self.genose.predict_finished.connect(self.on_prediction_finished)
 
+        self.infobarTimer = QTimer()
+        
+    def on_inhale_flush_applied(self, inhale, flush):
+        self.genose.setInhaleFlushTimerSetting(port= self.selectedPort,inhale= inhale, flush= flush)
+
     def collect_data_with_loading(self):
         print("Collecting data")
-        # Retrieve the user input
-        # selectedPort = self.comboxPortSelector.currentText()
         selectedPort = self.selectedPort
-        # selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
         selectAmount = 2
 
         if(selectAmount <= 0):
@@ -69,7 +72,6 @@ class AppWindow(MainWindow):
 
     def on_genose_port_finished(self, port):
         self.infoBar.setText(f"selected genose port : {port}")
-        self.infobarTimer = QTimer()
         self.infobarTimer.singleShot(2000, lambda: self.infoBar.setText(""))
 
         if(port==""):
@@ -97,7 +99,7 @@ class AppWindow(MainWindow):
         result = self.genose.predictions[len(self.genose.predictions) - 1]
         result = PREDICT_RESULT_DICT[result]
 
-        self.header.setText(result)
+        self.footer.setText(result)
         
         self.plot_sensor_data(self.genose.sensorData)
 

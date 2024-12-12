@@ -1,6 +1,6 @@
 import sys, os, platform
 from lib.genose.classifier import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier, PredictionThread
-from lib.communication.data_collector import DataCollectionThread
+from lib.communication.data_collector import DataCollectionThread, DataCollector
 from lib.communication.communication import Communication
 import config
 import pandas as pd
@@ -39,7 +39,7 @@ AI_MODEL_DICT = {
 }
 
 PREDICT_RESULT_DICT = { # TODO : This
-    0 : "KOPI",
+    1 : "KOPI",
     10 : "TEH",
     100 : "JAGUNG"
 }
@@ -140,7 +140,7 @@ class FindPortWorker(QObject):
                 if(system == "Linux"):
                     portname = "/dev/" + portname
 
-                ser = Serial(port=portname, baudrate=9600, timeout=0.5, write_timeout=0.5)
+                ser = Serial(port=portname, baudrate=9600, timeout=0.2, write_timeout=0.2)
                 ser.flush()
                 
                 sent = 0
@@ -297,6 +297,13 @@ class Genose(QObject):
             raise Exception("Model ID invalid")
         
         self.aiModel = model
+
+    def setInhaleFlushTimerSetting(self, port, inhale, flush):
+        dataCollector = DataCollector(port=port)
+        dataCollector.initialize()
+        dataCollector.sendSetInhale(inhale)
+        dataCollector.sendSetFlush(flush)
+
 
     def startCollectData(self, port, amount = DEFAULT_DATA_COLLECT_AMOUNT):
         self.data_collection_thread = DataCollectionThread()

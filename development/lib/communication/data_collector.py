@@ -34,6 +34,7 @@ class DataCollector(QObject):
     def initialize(self):
         self.serial = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout, write_timeout=self.timeout)
         self.serial.write(Communication.toByte(Communication.Command.INIT, 0))
+        self.serial.write(b'\n')
 
         if(self.isOK()):
             return
@@ -49,6 +50,24 @@ class DataCollector(QObject):
             return True
         else:
             return False
+        
+    def sendSetInhale(self, value : int):
+        self.serial.write(Communication.toByte(Communication.Command.SET_INHALE, value))
+        self.serial.write(b'\n')
+
+        if(self.isOK()):
+            return
+        else:
+            raise Exception("Failed to set inhale setting")
+        
+    def sendSetFlush(self, value : int):
+        self.serial.write(Communication.toByte(Communication.Command.SET_FLUSH, value))
+        self.serial.write(b'\n')
+
+        if(self.isOK()):
+            return
+        else:
+            raise Exception("Failed to set flush setting")
         
     def reset(self):
         self.sensor_values = []

@@ -67,15 +67,13 @@ while True:
         parsed = toNumber(recv[0:8])
         cmd = parsed[0]
         val = parsed[1]
-
-        if(cmd == command["init"]):
-            sendOK()
-        elif(cmd == command["start_sampling"]):
+        
+        if(cmd == command["start_sampling"]):
             isSendData=True
-            sendOK()
         elif(cmd == command["stop_sampling"]):
             isSendData=False
-            sendOK()
+        
+        sendOK()
 
 
         print(f"command {cmd} value {val}")

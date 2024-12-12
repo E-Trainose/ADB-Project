@@ -267,6 +267,7 @@ class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
     model_select_sig = pyqtSignal(str)
     ai_model_file_imported = pyqtSignal(str)
+    inhale_flush_applied = pyqtSignal([int, int])
 
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
@@ -293,6 +294,9 @@ class MainWindow(CustomMainWindow):
         self.features = {"SKEW" : False, "KURTOSIS" : False, "MIN" : False, "MAX" : False, "MEAN" : False}
 
         self.aiModels : list[str] = []
+
+        self.inhaleVal = 0.5
+        self.flushVal = 20
 
         self.setStyleSheet("MainWindow { background-color : #537EFF; }")
         self.resize(WIDTH, HEIGHT)
@@ -544,13 +548,23 @@ class MainWindow(CustomMainWindow):
 
     def showCustomGenoseSettingContent(self):
         self.showHeader("CUSTOM")
+
+        def applyClicked():
+            inhale = int (float(self.inhaleValEdit.text()) * 1000)
+            flush = int (float(self.flushValEdit.text()) * 1000)
+
+            self.inhale_flush_applied.emit(inhale, flush)
         
         self.inhaleLabel = AutoFontLabel("Inhale Timer (s)", self.fonts[1], "#D9D9D9", 2.0, self, QSize(23, 8))
         self.flushLabel = AutoFontLabel("Flush Timer (s)", self.fonts[1], "#D9D9D9", 2.0, self, QSize(23, 8))
 
         self.applyButton = AutoFontContentButton("apply", self.fonts[1], "#FA6FC3", 1.0, QSize(10, 6), self)
+        self.applyButton.clicked.connect(applyClicked)
+
         self.inhaleValEdit = AutoFontLineEdit(self, QSize(5,8))
+        self.inhaleValEdit.setText(str(self.inhaleVal))
         self.flushValEdit = AutoFontLineEdit(self, QSize(5,8))
+        self.flushValEdit.setText(str(self.flushVal))
 
         self.labelVbox = QVBoxLayout()
         self.labelVbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
