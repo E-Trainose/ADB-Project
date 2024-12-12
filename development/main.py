@@ -10,6 +10,10 @@ class AppWindow(MainWindow):
     def __init__(self, parent=..., flags=...):
         super().__init__(parent, flags)
 
+        self.startButton.setText("LOADING")
+        self.startButton.setEnabled(False)
+        self.startButton.setDown(True)
+
         self.aboutButton.clicked.connect(lambda : print("info"))
 
         self.take_data_sig.connect(self.collect_data_with_loading)
@@ -36,7 +40,7 @@ class AppWindow(MainWindow):
         print("Collecting data")
         # Retrieve the user input
         # selectedPort = self.comboxPortSelector.currentText()
-        selectedPort = 'COM3'
+        selectedPort = self.selectedPort
         # selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
         selectAmount = 5
 
@@ -71,6 +75,7 @@ class AppWindow(MainWindow):
         if(port==""):
             self.notifyPopin("No Genose Found")
         else:
+            self.selectedPort = port
             self.startButton.setText("START")
             self.startButton.setEnabled(True)
             self.startButton.setDown(False)

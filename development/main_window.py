@@ -313,10 +313,6 @@ class MainWindow(CustomMainWindow):
         self.startButton.clicked.connect(lambda : self.goToApp())
         self.resized.connect(lambda: self.startButton.setGeometry(px(40), py(80), px(20), py(10)))
 
-        self.startButton.setText("LOADING")
-        self.startButton.setEnabled(False)
-        self.startButton.setDown(True)
-
         self.logo_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/etrainose_logo.png")
         self.home_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/home_icon.png")
         self.about_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/about_icon.png")
