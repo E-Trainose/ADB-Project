@@ -1,4 +1,5 @@
 import serial
+from lib.communication.communication import Communication
 import csv
 import pandas as pd
 import numpy as np
@@ -31,12 +32,33 @@ class DataCollector(QObject):
         self.sensor_headers = ['TGS2600', 'TGS2602', 'TGS816', 'TGS813', 'MQ8', 'TGS2611', 'TGS2620', 'TGS822', 'MQ135', 'MQ3']
 
     def initialize(self):
-        self.serial = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
+        self.serial = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout, write_timeout=self.timeout)
+        self.serial.write(Communication.toByte(Communication.Command.INIT, 0))
 
+        if(self.isOK()):
+            return
+        else:
+            raise Exception("Genose not responding")
+        
+        
+    def isOK(self):
+        recv = self.serial.read_until(b"\n")
+        recv = Communication.toNumber(recv[0:8])
+        
+        if(recv[0] == Communication.Command.OK):
+            return True
+        else:
+            return False
+        
     def reset(self):
         self.sensor_values = []
 
     def collect(self):
+        self.serial.write(Communication.toByte(Communication.Command.START_SAMPLING, 0))
+
+        if(self.isOK() == False):
+            raise Exception("Genose not responding")
+        
         print("Waiting for 'S' command from Arduino to start collecting data...")
 
         # Wait for 'S' command from Arduino to start collecting data
@@ -79,6 +101,11 @@ class DataCollector(QObject):
                 break
             except ValueError:
                 print(f"Error converting data to float: {data}")
+
+        self.serial.write(Communication.toByte(Communication.Command.STOP_SAMPLING, 0))
+
+        if(self.isOK() == False):
+            raise Exception("Genose not responding")
 
     def getDataFrame(self):
         data = pd.DataFrame()

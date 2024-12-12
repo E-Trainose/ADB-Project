@@ -42,7 +42,7 @@ class AppWindow(MainWindow):
         # selectedPort = self.comboxPortSelector.currentText()
         selectedPort = self.selectedPort
         # selectAmount = self.ui.inputamount_default_take.value()  # Ensure this retrieves an integer
-        selectAmount = 5
+        selectAmount = 2
 
         if(selectAmount <= 0):
             # need to display error

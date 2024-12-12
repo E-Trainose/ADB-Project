@@ -200,8 +200,13 @@ void parseMessage(char *message){
   memcpy(&command, &message[0], sizeof(int));
   memcpy(&value, &message[4], sizeof(int));
 
+  if(command < 0) return;
+
   switch (command)
   {
+  case command_t::INIT :
+    break;
+
   case command_t::START_SAMPLING :
     isSampling = true;
     break;
@@ -221,4 +226,7 @@ void parseMessage(char *message){
   default:
     break;
   }
+
+  Serial.write(command_t::OK);
+  Serial.write('\n');
 }
