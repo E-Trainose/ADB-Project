@@ -274,7 +274,7 @@ class MainWindow(CustomMainWindow):
         self.currentScreen = ScreenNames.LAUNCH
 
         self.screens = {
-            ScreenNames.LAUNCH                : { "show" : self.showLaunchScreen,                      "hide" : self.hideLaunchScreen                     },
+            ScreenNames.LAUNCH                : { "show" : self.showLaunchScreen,                      "hide" : self.hideLaunchScreen                      },
             ScreenNames.HOME                  : { "show" : self.showHomeContent,                       "hide" : self.hideHomeContent                       },
             ScreenNames.DEF_TAKE_SAMPLE       : { "show" : self.showDefaultTakeSampleContent,          "hide" : self.hideDefaultTakeSampleContent          },
             ScreenNames.DEF_MODEL_SELECTION   : { "show" : self.showDefaultModelSelectionContent,      "hide" : self.hideDefaultModelSelectionContent      },
@@ -312,6 +312,10 @@ class MainWindow(CustomMainWindow):
         self.startButton = self.createButton("START", self.fonts[1], "#FA6FC3", 3, self.launchPage)
         self.startButton.clicked.connect(lambda : self.goToApp())
         self.resized.connect(lambda: self.startButton.setGeometry(px(40), py(80), px(20), py(10)))
+
+        self.startButton.setText("LOADING")
+        self.startButton.setEnabled(False)
+        self.startButton.setDown(True)
 
         self.logo_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/etrainose_logo.png")
         self.home_pixmap = QPixmap(f"{config.WORKING_DIR_PATH}/resources/home_icon.png")
@@ -397,6 +401,11 @@ class MainWindow(CustomMainWindow):
         self.notification.setToolTip("Notification")
         self.resized.connect(lambda: self.notification.setGeometry(px(30), py(5), px(10), py(10)))
         self.opacity0(self.notification)
+
+        self.infoBar = AutoFontLabel("Notification", self.fonts[2], "none", 1.0, self, QSize(30, 5))
+        self.infoBar.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.resized.connect(lambda: self.infoBar.setGeometry(px(65), py(90), px(30), py(2)))
+        self.infoBar.setText("")
     
     def findPorts(self):
         ports = serial.tools.list_ports.comports()

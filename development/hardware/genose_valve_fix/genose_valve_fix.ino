@@ -19,20 +19,28 @@
 #define SAMPLE_DELAY_TIME 20
 
 typedef enum COMMAND {
-  START_SAMPLING = 0,
-  STOP_SAMPLING,
-  SET_FLUSH,
-  SET_INHALE
+  INIT = 0,
+  OK = 1,
+
+  START_SAMPLING=100,
+  STOP_SAMPLING=101,
+  SET_FLUSH=102,
+  SET_INHALE=103,
+
+  ERR_INIT = 200,
+  ERR_SAMPLING = 201
 } command_t;
 
 unsigned long previousMillis = 0; // untuk menyimpan waktu sebelumnya
-const long intervalHigh = 500;   // durasi HIGH 1 detik (1000 ms)
-const long intervalLow = 20000;    // durasi LOW 3 detik (3000 ms)
+long intervalHigh = 500;   // durasi HIGH 1 detik (1000 ms)
+long intervalLow = 20000;    // durasi LOW 3 detik (3000 ms)
 bool isHigh = false;              // status pin 10 apakah HIGH atau LOW
 
 bool isSampling = false;
 
-String serialRecv = "";
+const int serialRecvMaxLen = 10;
+char serialRecvCount = 0;
+char serialRecv[serialRecvMaxLen];
 
 void configureADS1115(uint8_t address);
 int16_t readADS1115(uint8_t address, uint8_t channel);
@@ -168,22 +176,29 @@ void sampleSerial(){
     char recv = Serial.read();
 
     if(recv == '\n'){
-      parseCommand(serialRecv);
+      parseMessage(serialRecv);
 
-      serialRecv = "";
+      serialRecvCount = 0;
     } 
     else {
-      serialRecv += recv;
+      if(serialRecvCount >= serialRecvMaxLen){
+        //buffer overflow
+        //discard msg
+        serialRecvCount = 0;
+      }
+
+      serialRecv[serialRecvCount] = recv;
+      serialRecvCount++;
     }
   }
 }
 
-void parseMessage(String message){
+void parseMessage(char *message){
   int command = -1;
   int value = -1;
 
-  memcpy(&command, message[0], sizeof(int));
-  memcpy(&value, message[4], sizeof(int));
+  memcpy(&command, &message[0], sizeof(int));
+  memcpy(&value, &message[4], sizeof(int));
 
   switch (command)
   {
@@ -195,7 +210,7 @@ void parseMessage(String message){
     isSampling = false;
     break;
 
-  case command_t::SET_INHALE :
+  case command_t::SET_FLUSH:
     intervalHigh = value;
     break;
   

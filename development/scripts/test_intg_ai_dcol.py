@@ -1,4 +1,4 @@
-from data_collector import DataCollector
+from development.lib.communication.data_collector import DataCollector
 from development.devGUI.classifier import NNClassifier, SVMClassifier, RFClassifier
 from scipy.stats import skew, kurtosis
 import pandas as pd

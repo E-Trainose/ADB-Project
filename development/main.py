@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QTimer, QThread
 
-from genose import Genose, PREDICT_RESULT_DICT
+from lib.genose.genose import Genose, PREDICT_RESULT_DICT
 
 from main_window import MainWindow
 
@@ -17,6 +18,7 @@ class AppWindow(MainWindow):
 
         self.genose = Genose()
         self.genose.loadModelsFromFolder()
+        self.genose.findGenosePort()
 
         for mdl in self.genose.DEFAULT_AI_DICT.keys():
             self.aiModels.append(mdl)
@@ -24,6 +26,8 @@ class AppWindow(MainWindow):
         for mdl in self.genose.CUSTOM_AI_DICT.keys():
             self.aiModels.append(mdl)
         
+        self.genose.genose_port_search_finished.connect(self.on_genose_port_finished)
+        self.genose.genose_port_search_progress.connect(self.on_genose_port_progress)
         self.genose.data_collection_finished.connect(self.on_data_collection_finished)
         self.genose.data_collection_progress.connect(self.on_data_collection_progress)
         self.genose.predict_finished.connect(self.on_prediction_finished)
@@ -59,6 +63,20 @@ class AppWindow(MainWindow):
             self.notifyPopin("Model loaded successfully")
             self.notification.setBgColor("blue")
 
+    def on_genose_port_finished(self, port):
+        self.infoBar.setText(f"selected genose port : {port}")
+        self.infobarTimer = QTimer()
+        self.infobarTimer.singleShot(2000, lambda: self.infoBar.setText(""))
+
+        if(port==""):
+            self.notifyPopin("No Genose Found")
+        else:
+            self.startButton.setText("START")
+            self.startButton.setEnabled(True)
+            self.startButton.setDown(False)
+
+    def on_genose_port_progress(self, progress):
+        self.infoBar.setText(f"genose search progress : {progress}%")
 
     def on_data_collection_finished(self):
         self.takeDataButton.setDisabled(False)

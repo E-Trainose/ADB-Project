@@ -1,13 +1,16 @@
-import sys, os
-from classifier import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier, PredictionThread
-from data_collector import DataCollectionThread
+import sys, os, platform
+from lib.genose.classifier import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier, PredictionThread
+from lib.communication.data_collector import DataCollectionThread
+from lib.communication.communication import Communication
 import config
 import pandas as pd
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject, QRunnable, QThreadPool
 import importlib.util
 import sys
 import string
 import secrets
+import serial.tools.list_ports
+from serial import Serial
 
 DEFAULT_DATA_COLLECT_AMOUNT = 10
 
@@ -116,6 +119,49 @@ def readModels():
 
     return customs, defaults
 
+class FindPortWorker(QObject):
+    port_search_progress = pyqtSignal(int)
+    port_search_finished = pyqtSignal(str)
+
+    def run(self):
+        selectedPort = ""
+        ports = serial.tools.list_ports.comports()
+        cur = 0
+        ports_ln = len(ports)
+
+        for port in ports:
+            try:
+                self.port_search_progress.emit(int((cur / ports_ln) * 100))
+                cur += 1
+
+                portname = port.device
+
+                system = platform.system()
+                if(system == "Linux"):
+                    portname = "/dev/" + portname
+
+                ser = Serial(port=portname, baudrate=9600, timeout=0.5, write_timeout=0.5)
+                ser.flush()
+                
+                sent = 0
+                sent += ser.write(Communication.toByte(Communication.Command.INIT, 120))
+                sent += ser.write(b'\n')
+
+                recv = ser.read_until(b'\n')
+
+                parsed = Communication.toNumber(recv[0:8])
+                cmd = parsed[0]
+                val = parsed[1]
+                
+                if(cmd == Communication.Command.OK):
+                    selectedPort = portname
+                    break
+                
+            except Exception as e:
+                print(e)
+
+        self.port_search_finished.emit(selectedPort)
+
 """
 flow custom
 
@@ -146,6 +192,8 @@ class Genose(QObject):
     data_collection_finished = pyqtSignal(int)
     data_collection_progress = pyqtSignal(int)
     predict_finished = pyqtSignal(int)
+    genose_port_search_finished = pyqtSignal(str)
+    genose_port_search_progress = pyqtSignal(int)
     
     def __init__(self):
         super().__init__()
@@ -167,6 +215,23 @@ class Genose(QObject):
         print(f"predictions : {predictions}")
         self.predictions = predictions
         self.predict_finished.emit(SUCCESS)
+
+    def findGenosePort(self):
+        self.findportworker = FindPortWorker()
+        self.findportthread = QThread()
+
+        self.findportworker.moveToThread(self.findportthread)
+
+        self.findportthread.started.connect(self.findportworker.run)
+        self.findportworker.port_search_progress.connect(lambda val: self.genose_port_search_progress.emit(val))
+        self.findportworker.port_search_finished.connect(lambda port: self.genose_port_search_finished.emit(port))
+        self.findportworker.port_search_finished.connect(self.findportthread.quit)
+        
+        self.findportworker.port_search_finished.connect(self.findportworker.deleteLater)
+        self.findportthread.finished.connect(self.findportthread.deleteLater)
+
+        self.findportthread.start()
+
 
     def loadModelModuleFromFile(self, path : str, name : str):
         ai_module = load_module(source=path, module_name=name)

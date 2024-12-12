@@ -1,4 +1,4 @@
-from data_collector import DataCollector
+from lib.communication.data_collector import DataCollector
 
 dCol = DataCollector(port='COM2', amount=2)
 dCol.collect()

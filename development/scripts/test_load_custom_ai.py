@@ -3,7 +3,7 @@ import sys
 import string
 import secrets
 
-from classifier import BaseClassifier
+from lib.genose.classifier import BaseClassifier
 
 def gensym(length=32, prefix="gensym_"):
     """
