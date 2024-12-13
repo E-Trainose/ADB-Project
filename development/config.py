@@ -1,4 +1,4 @@
-WORKING_DIR_PATH        = "D:\Data Andra\Project\ADB\ADB-Project\development"
+WORKING_DIR_PATH        = "/home/orin/testt/ADB-Project/development"
 MODELS_DIR_PATH         = WORKING_DIR_PATH + "/models"
 DATAS_DIR_PATH          = WORKING_DIR_PATH + "/datas"
 

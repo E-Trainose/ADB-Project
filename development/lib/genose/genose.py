@@ -138,7 +138,7 @@ class FindPortWorker(QObject):
 
                 system = platform.system()
                 if(system == "Linux"):
-                    portname = "/dev/" + portname
+                    portname = portname
 
                 print(f"opening port {portname}")
                 ser = Serial(port=portname, baudrate=9600, timeout=1, write_timeout=1)

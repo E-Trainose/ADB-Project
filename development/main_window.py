@@ -196,7 +196,7 @@ class AutoFontContentButton(QPushButton):
         return super().deleteLater()
 
 class AutoFontLineEdit(QLineEdit):
-    def __init__(self, parent : CustomMainWindow | None = None, percentSize : QSize = QSize(5, 10)):
+    def __init__(self, parent : CustomMainWindow  = None, percentSize : QSize = QSize(5, 10)):
         super().__init__(parent)
 
         self.__parent = parent
