@@ -268,6 +268,8 @@ class MainWindow(CustomMainWindow):
     model_select_sig = pyqtSignal(str)
     ai_model_file_imported = pyqtSignal(str)
     inhale_flush_applied = pyqtSignal([int, int])
+    preprocess_clicked = pyqtSignal()
+    start_training_sig = pyqtSignal()
 
     def __init__(self, parent = ..., flags = ...):
         super(MainWindow, self).__init__()
@@ -482,12 +484,17 @@ class MainWindow(CustomMainWindow):
         # self.takeDataButton.clicked.connect(lambda : self.changeContent("def-model-selection"))
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
+        self.sampleAmountEdit = AutoFontLineEdit(self, QSize(5,8))
+        self.sampleAmountEdit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sampleAmountEdit.setText(str(10))
+
         # self.comboxPortSelector = QComboBox()
         # self.findPorts()
 
         self.showHeader("DEFAULT")
 
         self.contentVbox.addWidget(self.takeDataButton)
+        self.contentVbox.addWidget(self.sampleAmountEdit)
         # self.contentVbox.addWidget(self.comboxPortSelector)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -508,10 +515,17 @@ class MainWindow(CustomMainWindow):
 
         self.contentVbox.addLayout(self.barHbox)
 
+        self.nextNav = ScreenNames.DEF_MODEL_SELECTION
+        self.prevNav = ScreenNames.DEF_TAKE_SAMPLE
+
+        self.showBotNavbar()
+        
+
     def hideDefaultTakeSampleContent(self):
         self.barHbox.removeItem(self.spacer1)
         self.barHbox.removeItem(self.spacer2)
         self.takeDataButton.deleteLater()
+        self.sampleAmountEdit.deleteLater()
         # self.comboxPortSelector.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
@@ -530,6 +544,9 @@ class MainWindow(CustomMainWindow):
         self.contentVbox.addWidget(self.rfButton)
         self.contentVbox.addWidget(self.nnButton)
 
+        self.nextNav = ScreenNames.DEF_PREDICTION_RESULT
+        self.prevNav = ScreenNames.DEF_TAKE_SAMPLE
+
     def hideDefaultModelSelectionContent(self):
         self.svmButton.deleteLater()
         self.rfButton.deleteLater()
@@ -541,6 +558,9 @@ class MainWindow(CustomMainWindow):
         self.contentVbox.addWidget(self.sensorGraph)
 
         self.showFooter("PREDICTION RESULT")
+
+        self.nextNav = ScreenNames.DEF_PREDICTION_RESULT
+        self.prevNav = ScreenNames.DEF_MODEL_SELECTION
     
     def hideDefaultPredictionResultContent(self):
         self.sensorGraph.deleteLater()
@@ -596,19 +616,55 @@ class MainWindow(CustomMainWindow):
     def hideCustomGenoseSettingContent(self):
         self.clearContentVbox()
 
-    def showCustomTakeDatasetContent(self):
-        self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
+    def showCustomTakeDatasetContent(self): 
+        self.takeDataButton = AutoFontContentButton(text="TAKE RAW DATASET", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
 
-        self.contentVbox.addWidget(self.takeRawDatasetBtn)
+        self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
+
+        self.contentVbox.addWidget(self.takeDataButton)
+
+        self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.pbar = QProgressBar(self)
+        sp = self.pbar.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        self.pbar.setSizePolicy(sp)
+        self.pbar.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.pbar.setValue(0)
+
+        self.barHbox = QHBoxLayout()
+
+        self.barHbox.addItem(self.spacer1)
+        self.barHbox.addWidget(self.pbar)
+        self.barHbox.addItem(self.spacer2)
+
+        self.contentVbox.addLayout(self.barHbox)
 
         self.nextNav = ScreenNames.CUS_PREPROCESSING
         self.prevNav = ScreenNames.CUS_GENOSE_SETTING
 
-    def hideCustomTakeDatasetContent(self): 
-        self.takeRawDatasetBtn.deleteLater()
+    def hideCustomTakeDatasetContent(self):
+        self.barHbox.removeItem(self.spacer1)
+        self.barHbox.removeItem(self.spacer2)
+        self.takeDataButton.deleteLater()
+        self.pbar.deleteLater()
+        self.barHbox.deleteLater()
+
+    # def showCustomTakeDatasetContent(self):
+    #     self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
+
+    #     self.contentVbox.addWidget(self.takeRawDatasetBtn)
+
+    #     self.nextNav = ScreenNames.CUS_PREPROCESSING
+    #     self.prevNav = ScreenNames.CUS_GENOSE_SETTING
+
+    # def hideCustomTakeDatasetContent(self): 
+    #     self.takeRawDatasetBtn.deleteLater()
 
     def showCustomPreprocessingContent(self): 
         self.preprocessingBtn = AutoFontContentButton("PREPROCESSING", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
+        self.preprocessingBtn.clicked.connect(lambda : self.preprocess_clicked.emit())
 
         self.contentVbox.addWidget(self.preprocessingBtn)
 
@@ -684,6 +740,8 @@ class MainWindow(CustomMainWindow):
 
         self.startTrainingBtn = AutoFontContentButton("START TRAINING", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
 
+        self.startTrainingBtn.clicked.connect(lambda : self.start_training_sig.emit())
+
         self.contentVbox.addWidget(self.importModelBtn)
         self.contentVbox.addWidget(self.startTrainingBtn)
 
@@ -716,10 +774,14 @@ class MainWindow(CustomMainWindow):
 
         self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
 
+        self.sampleAmountEdit = AutoFontLineEdit(self, QSize(5,8))
+        self.sampleAmountEdit.setText(str(10))
+
         # self.comboxPortSelector = QComboBox()
         # self.findPorts()
 
         self.contentVbox.addWidget(self.takeDataButton)
+        self.contentVbox.addWidget(self.sampleAmountEdit)
         # self.contentVbox.addWidget(self.comboxPortSelector)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)

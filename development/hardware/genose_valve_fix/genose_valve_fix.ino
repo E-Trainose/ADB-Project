@@ -62,9 +62,12 @@ void setup() {
 }
 
 void loop() {
-  handleValve();
   sampleSerial();
-  if(isSampling) sampling();
+  
+  if(isSampling) {
+    handleValve();
+    sampling();
+  }
 }
 
 void configureADS1115(uint8_t address) {
@@ -201,7 +204,7 @@ void parseMessage(char *message){
   memcpy(&value, &message[4], sizeof(int));
 
   if(command < 0) return;
-
+  
   switch (command)
   {
   case command_t::INIT :
@@ -227,6 +230,13 @@ void parseMessage(char *message){
     break;
   }
 
-  Serial.write(command_t::OK);
+  char buffer[8];
+  long cmd = (int)command_t::OK;
+  long val = 0;
+  
+  memcpy(&buffer[0], &cmd, 4);
+  memcpy(&buffer[4], &val, 4);
+
+  Serial.write(buffer, 8);
   Serial.write('\n');
 }

@@ -1,4 +1,4 @@
-import sys, os, platform
+import sys, os, platform, time
 from lib.genose.classifier import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier, PredictionThread
 from lib.communication.data_collector import DataCollectionThread, DataCollector
 from lib.communication.communication import Communication
@@ -39,9 +39,9 @@ AI_MODEL_DICT = {
 }
 
 PREDICT_RESULT_DICT = { # TODO : This
-    1 : "KOPI",
-    10 : "TEH",
-    100 : "JAGUNG"
+    1 : "ALKOHOL",
+    10 : "KOPI",
+    100 : "TEH"
 }
 
 SUCCESS = 1
@@ -140,14 +140,19 @@ class FindPortWorker(QObject):
                 if(system == "Linux"):
                     portname = "/dev/" + portname
 
-                ser = Serial(port=portname, baudrate=9600, timeout=0.2, write_timeout=0.2)
+                print(f"opening port {portname}")
+                ser = Serial(port=portname, baudrate=9600, timeout=1, write_timeout=1)
                 ser.flush()
+
+                time.sleep(2)
                 
                 sent = 0
-                sent += ser.write(Communication.toByte(Communication.Command.INIT, 120))
+                sent += ser.write(Communication.toByte(Communication.Command.INIT, 0))
                 sent += ser.write(b'\n')
 
                 recv = ser.read_until(b'\n')
+
+                print(f"received : {recv}")
 
                 parsed = Communication.toNumber(recv[0:8])
                 cmd = parsed[0]
@@ -161,6 +166,17 @@ class FindPortWorker(QObject):
                 print(e)
 
         self.port_search_finished.emit(selectedPort)
+
+class PreprocessWorker(QObject):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal(pd.DataFrame)
+    
+    def setDatas(self, datas : pd.DataFrame):
+        self.datas = datas
+
+    def run(self):
+        # preprocess
+        return self.datas
 
 """
 flow custom
@@ -303,7 +319,7 @@ class Genose(QObject):
         dataCollector.initialize()
         dataCollector.sendSetInhale(inhale)
         dataCollector.sendSetFlush(flush)
-
+        dataCollector.deinitialize()
 
     def startCollectData(self, port, amount = DEFAULT_DATA_COLLECT_AMOUNT):
         self.data_collection_thread = DataCollectionThread()
@@ -321,3 +337,19 @@ class Genose(QObject):
         self.predict_thread.setDatas(self.sensorData)
         
         self.predict_thread.start()
+
+    def startPreprocess(self):
+        self.prepWorker = PreprocessWorker()
+        self.prepThread = QThread()
+
+        self.prepWorker.moveToThread(self.prepThread)
+
+        self.prepThread.started.connect(self.prepWorker.run)
+        # self.prepWorker.progress.connect(lambda val: self.genose_port_search_progress.emit(val))
+        self.prepWorker.finished.connect(lambda port: self.genose_port_search_finished.emit(port))
+        self.prepWorker.finished.connect(self.prepThread.quit)
+        
+        self.prepWorker.port_search_finished.connect(self.prepWorker.deleteLater)
+        self.prepThread.finished.connect(self.prepThread.deleteLater)
+
+        self.prepThread.start()

@@ -1,4 +1,4 @@
-import serial
+import serial, time
 from lib.communication.communication import Communication
 import csv
 import pandas as pd
@@ -24,7 +24,7 @@ class DataCollector(QObject):
         super().__init__()
         self.port = port
         self.baudrate = 9600
-        self.timeout = 1
+        self.timeout = 5
         self.amount = amount
 
         self.sensor_values = []
@@ -33,6 +33,10 @@ class DataCollector(QObject):
 
     def initialize(self):
         self.serial = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout, write_timeout=self.timeout)
+        self.serial.flush()
+
+        time.sleep(4) # wait for genose to ready
+
         self.serial.write(Communication.toByte(Communication.Command.INIT, 0))
         self.serial.write(b'\n')
 
@@ -41,9 +45,15 @@ class DataCollector(QObject):
         else:
             raise Exception("Genose not responding")
         
+    def deinitialize(self):
+        self.serial.close()
+        
         
     def isOK(self):
         recv = self.serial.read_until(b"\n")
+
+        print(f"received {recv}")
+
         recv = Communication.toNumber(recv[0:8])
         
         if(recv[0] == Communication.Command.OK):
@@ -74,6 +84,7 @@ class DataCollector(QObject):
 
     def collect(self):
         self.serial.write(Communication.toByte(Communication.Command.START_SAMPLING, 0))
+        self.serial.write(b'\n')
 
         if(self.isOK() == False):
             raise Exception("Genose not responding")
@@ -120,11 +131,13 @@ class DataCollector(QObject):
                 break
             except ValueError:
                 print(f"Error converting data to float: {data}")
+        
+        self.serial.close()
+        # self.serial.write(Communication.toByte(Communication.Command.STOP_SAMPLING, 0))
+        # self.serial.write(b'\n')
 
-        self.serial.write(Communication.toByte(Communication.Command.STOP_SAMPLING, 0))
-
-        if(self.isOK() == False):
-            raise Exception("Genose not responding")
+        # if(self.isOK() == False):
+        #     raise Exception("Genose not responding")
 
     def getDataFrame(self):
         data = pd.DataFrame()
@@ -145,7 +158,6 @@ class DataCollector(QObject):
             writer.writerow(self.sensor_headers)
 
             writer.writerows(self.sensor_values)
-
 
 
 class DataCollectionThread(QThread):

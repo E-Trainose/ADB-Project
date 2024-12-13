@@ -10,6 +10,8 @@ class AppWindow(MainWindow):
     def __init__(self, parent=..., flags=...):
         super().__init__(parent, flags)
 
+        self.importedAiModule = None
+
         self.startButton.setText("LOADING")
         self.startButton.setEnabled(False)
         self.startButton.setDown(True)
@@ -20,6 +22,8 @@ class AppWindow(MainWindow):
         self.model_select_sig.connect(self.model_predict_with_loading)
         self.ai_model_file_imported.connect(self.ai_model_file_import)
         self.inhale_flush_applied.connect(self.on_inhale_flush_applied)
+        self.preprocess_clicked.connect(self.preprocessing)
+        self.start_training_sig.connect(self.start_training)
 
         self.genose = Genose()
         self.genose.loadModelsFromFolder()
@@ -38,14 +42,14 @@ class AppWindow(MainWindow):
         self.genose.predict_finished.connect(self.on_prediction_finished)
 
         self.infobarTimer = QTimer()
-        
+
     def on_inhale_flush_applied(self, inhale, flush):
         self.genose.setInhaleFlushTimerSetting(port= self.selectedPort,inhale= inhale, flush= flush)
 
     def collect_data_with_loading(self):
         print("Collecting data")
         selectedPort = self.selectedPort
-        selectAmount = 2
+        selectAmount = int(self.sampleAmountEdit.text())
 
         if(selectAmount <= 0):
             # need to display error
@@ -60,6 +64,14 @@ class AppWindow(MainWindow):
         self.genose.setAIModel(model_id)
         self.genose.startPredict()
 
+    def preprocessing(self):
+        print("preprocessing")
+
+    def start_training(self):
+        print(f"start training")
+        print(f"using features : {self.features}")
+        print(f"using model : {self.importedAiModule}")
+
     def ai_model_file_import(self, model_filepath):
         module = self.genose.loadModelModuleFromFile(model_filepath, "model")
 
@@ -69,6 +81,8 @@ class AppWindow(MainWindow):
         else:
             self.notifyPopin("Model loaded successfully")
             self.notification.setBgColor("blue")
+        
+        self.importedAiModule = module
 
     def on_genose_port_finished(self, port):
         self.infoBar.setText(f"selected genose port : {port}")
@@ -88,7 +102,8 @@ class AppWindow(MainWindow):
     def on_data_collection_finished(self):
         self.takeDataButton.setDisabled(False)
         self.pbar.setValue(100)
-        self.changeContent("def-model-selection")
+        # self.changeContent("def-model-selection")
+        self.notifyPopin("Finished collecting data")
 
     def on_data_collection_progress(self, progress):
         self.pbar.setValue(progress)
