@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QTimer, QThread
+from PyQt5.QtCore import QTimer, QThread, QThreadPool
 
-from lib.genose.genose import Genose, PREDICT_RESULT_DICT
+from lib.genose.genose import Genose, PREDICT_RESULT_DICT, FindPortWorker
 
 from main_window import MainWindow
 
@@ -19,6 +19,7 @@ class AppWindow(MainWindow):
         self.aboutButton.clicked.connect(lambda : print("info"))
 
         self.take_data_sig.connect(self.collect_data_with_loading)
+        self.take_raw_sig.connect(self.collect_raw_data_with_loading)
         self.model_select_sig.connect(self.model_predict_with_loading)
         self.ai_model_file_imported.connect(self.ai_model_file_import)
         self.inhale_flush_applied.connect(self.on_inhale_flush_applied)
@@ -37,11 +38,10 @@ class AppWindow(MainWindow):
         
         self.genose.genose_port_search_finished.connect(self.on_genose_port_finished)
         self.genose.genose_port_search_progress.connect(self.on_genose_port_progress)
-        self.genose.data_collection_finished.connect(self.on_data_collection_finished)
         self.genose.data_collection_progress.connect(self.on_data_collection_progress)
         self.genose.predict_finished.connect(self.on_prediction_finished)
 
-        self.infobarTimer = QTimer()
+        self.timer = QTimer()
 
     def on_inhale_flush_applied(self, inhale, flush):
         self.genose.setInhaleFlushTimerSetting(port= self.selectedPort,inhale= inhale, flush= flush)
@@ -57,6 +57,21 @@ class AppWindow(MainWindow):
         
         self.takeDataButton.setDisabled(True)
 
+        self.genose.data_collection_finished.connect(self.on_data_collection_finished)
+        self.genose.startCollectData(port=selectedPort, amount=selectAmount)
+
+    def collect_raw_with_loading(self):
+        print("Collecting data")
+        selectedPort = self.selectedPort
+        selectAmount = int(self.sampleAmountEdit.text())
+
+        if(selectAmount <= 0):
+            # need to display error
+            return
+        
+        self.takeDataButton.setDisabled(True)
+
+        self.genose.data_collection_finished.connect(self.on_raw_data_collection_finished)
         self.genose.startCollectData(port=selectedPort, amount=selectAmount)
 
     def model_predict_with_loading(self, model_id : str):
@@ -72,6 +87,8 @@ class AppWindow(MainWindow):
         print(f"using features : {self.features}")
         print(f"using model : {self.importedAiModule}")
 
+        self.genose.startTraining(self.importedAiModule, self.features)
+
     def ai_model_file_import(self, model_filepath):
         module = self.genose.loadModelModuleFromFile(model_filepath, "model")
 
@@ -86,10 +103,12 @@ class AppWindow(MainWindow):
 
     def on_genose_port_finished(self, port):
         self.infoBar.setText(f"selected genose port : {port}")
-        self.infobarTimer.singleShot(2000, lambda: self.infoBar.setText(""))
+        self.timer.singleShot(2000, lambda: self.infoBar.setText(""))
 
         if(port==""):
             self.notifyPopin("No Genose Found")
+            self.timer.singleShot(5000, lambda: self.genose.findGenosePort())
+
         else:
             self.selectedPort = port
             self.startButton.setText("START")
@@ -104,6 +123,16 @@ class AppWindow(MainWindow):
         self.pbar.setValue(100)
         # self.changeContent("def-model-selection")
         self.notifyPopin("Finished collecting data")
+
+    def on_raw_data_collection_finished(self):
+        self.takeDataButton.setDisabled(False)
+        self.pbar.setValue(100)
+        
+        self.notifyPopin("Finished collecting raw data")
+
+        label = self.trainingLabelEdit.text()
+        
+        self.genose.sensorData["LABEL"] = label
 
     def on_data_collection_progress(self, progress):
         self.pbar.setValue(progress)

@@ -265,6 +265,7 @@ class ScreenNames:
 
 class MainWindow(CustomMainWindow):
     take_data_sig = pyqtSignal()
+    take_raw_sig = pyqtSignal()
     model_select_sig = pyqtSignal(str)
     ai_model_file_imported = pyqtSignal(str)
     inhale_flush_applied = pyqtSignal([int, int])
@@ -462,11 +463,11 @@ class MainWindow(CustomMainWindow):
         self.defaultButton = AutoFontContentButton(text="DEFAULT", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
         self.defaultButton.clicked.connect(lambda : self.changeContent(ScreenNames.DEF_TAKE_SAMPLE))
 
-        self.customButton = AutoFontContentButton(text="CUSTOM", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
-        self.customButton.clicked.connect(lambda : self.changeContent(ScreenNames.CUS_GENOSE_SETTING))
+        # self.customButton = AutoFontContentButton(text="CUSTOM", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=3, parent=self)
+        # self.customButton.clicked.connect(lambda : self.changeContent(ScreenNames.CUS_GENOSE_SETTING))
 
         self.contentVbox.addWidget(self.defaultButton)
-        self.contentVbox.addWidget(self.customButton)
+        # self.contentVbox.addWidget(self.customButton)
 
         if(self.isBotNavbarShown):
             print("hello")
@@ -477,7 +478,7 @@ class MainWindow(CustomMainWindow):
 
     def hideHomeContent(self):
         self.defaultButton.deleteLater()
-        self.customButton.deleteLater()
+        # self.customButton.deleteLater()
 
     def showDefaultTakeSampleContent(self):
         self.takeDataButton = AutoFontContentButton(text="TAKE DATA SAMPLE", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
@@ -488,14 +489,14 @@ class MainWindow(CustomMainWindow):
         self.sampleAmountEdit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sampleAmountEdit.setText(str(10))
 
-        # self.comboxPortSelector = QComboBox()
-        # self.findPorts()
-
         self.showHeader("DEFAULT")
 
-        self.contentVbox.addWidget(self.takeDataButton)
-        self.contentVbox.addWidget(self.sampleAmountEdit)
-        # self.contentVbox.addWidget(self.comboxPortSelector)
+        self.dtkhlayout = QHBoxLayout()
+
+        self.dtkhlayout.addWidget(self.takeDataButton)
+        self.dtkhlayout.addWidget(self.sampleAmountEdit)
+
+        self.contentVbox.addLayout(self.dtkhlayout)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         self.spacer2 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -526,9 +527,9 @@ class MainWindow(CustomMainWindow):
         self.barHbox.removeItem(self.spacer2)
         self.takeDataButton.deleteLater()
         self.sampleAmountEdit.deleteLater()
-        # self.comboxPortSelector.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
+        self.dtkhlayout.deleteLater()
 
     def showDefaultModelSelectionContent(self):
         self.svmButton = AutoFontContentButton("SVM", self.fonts[1], "#FA6FC3", 2, QSize(25, 10), self)
@@ -618,9 +619,32 @@ class MainWindow(CustomMainWindow):
 
     def showCustomTakeDatasetContent(self): 
         self.takeDataButton = AutoFontContentButton(text="TAKE RAW DATASET", font_idx=self.fonts[1], color_hex="#FA6FC3", scale=2, parent=self, percentSize=QSize(30, 10))
+        self.takeDataButton.clicked.connect(lambda : self.take_raw_sig.emit())
 
-        self.takeDataButton.clicked.connect(lambda : self.take_data_sig.emit())
+        self.sampleAmountLabel = AutoFontLabel("Amount", self.fonts[1], "#FA6FC3", 2.0, self, QSize(10, 10))
+        self.sampleAmountEdit = AutoFontLineEdit(self, QSize(18,10))
+        self.sampleAmountEdit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sampleAmountEdit.setText("")
+        self.sampleAmountEdit.setPlaceholderText("jumlah data")
 
+        self.dtkhlayout = QHBoxLayout()
+        self.dtkhlayout.setAlignment(Qt.AlignmentFlag.AlignLeading)
+        self.dtkhlayout.addWidget(self.sampleAmountLabel)
+        self.dtkhlayout.addWidget(self.sampleAmountEdit)
+
+        self.trainingLabelLabel = AutoFontLabel("Label", self.fonts[1], "#FA6FC3", 2.0, self, QSize(10, 10))
+        self.trainingLabelEdit = AutoFontLineEdit(self, QSize(18,10))
+        self.trainingLabelEdit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.trainingLabelEdit.setPlaceholderText("label data")
+        self.trainingLabelEdit.setText("")
+
+        self.trainingLabelHbox = QHBoxLayout()
+        self.trainingLabelHbox.setAlignment(Qt.AlignmentFlag.AlignLeading)
+        self.trainingLabelHbox.addWidget(self.trainingLabelLabel)
+        self.trainingLabelHbox.addWidget(self.trainingLabelEdit)
+
+        self.contentVbox.addLayout(self.dtkhlayout)
+        self.contentVbox.addLayout(self.trainingLabelHbox)
         self.contentVbox.addWidget(self.takeDataButton)
 
         self.spacer1 = QSpacerItem(10, 40, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -647,20 +671,15 @@ class MainWindow(CustomMainWindow):
     def hideCustomTakeDatasetContent(self):
         self.barHbox.removeItem(self.spacer1)
         self.barHbox.removeItem(self.spacer2)
+        self.sampleAmountLabel.deleteLater()
         self.takeDataButton.deleteLater()
+        self.sampleAmountEdit.deleteLater()
         self.pbar.deleteLater()
         self.barHbox.deleteLater()
-
-    # def showCustomTakeDatasetContent(self):
-    #     self.takeRawDatasetBtn = AutoFontContentButton("TAKE RAW DATASET", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)
-
-    #     self.contentVbox.addWidget(self.takeRawDatasetBtn)
-
-    #     self.nextNav = ScreenNames.CUS_PREPROCESSING
-    #     self.prevNav = ScreenNames.CUS_GENOSE_SETTING
-
-    # def hideCustomTakeDatasetContent(self): 
-    #     self.takeRawDatasetBtn.deleteLater()
+        self.dtkhlayout.deleteLater()
+        self.trainingLabelLabel.deleteLater()
+        self.trainingLabelEdit.deleteLater()
+        self.trainingLabelHbox.deleteLater()
 
     def showCustomPreprocessingContent(self): 
         self.preprocessingBtn = AutoFontContentButton("PREPROCESSING", self.fonts[1], "#FA6FC3", 2.0, QSize(25,10), self)

@@ -15,8 +15,8 @@ class Classifier:
     def predict(self, datas):
         return [1]
     
-    def train(self, data):
-        return 1.0
+    # def train(self, data):
+    #     return 1.0
     
     def save(self, folderPath):
         print("Model saved as 'svm_model.pkl' and label encoder as 'label_encoder_svm.pkl'")
@@ -24,30 +24,30 @@ class Classifier:
     def load(self):
         print("load model")
 
-    # def train(self, data : pd.DataFrame):
-    #     # Split features and label
-    #     X = data.drop(columns=['LABEL'])
-    #     y = data['LABEL']
+    def train(self, data : pd.DataFrame):
+        # Split features and label
+        X = data.drop(columns=['LABEL'])
+        y = data['LABEL']
 
-    #     # Encode the labels
-    #     self.label_encoder = LabelEncoder()
-    #     y_encoded = self.label_encoder.fit_transform(y)
+        # Encode the labels
+        self.label_encoder = LabelEncoder()
+        y_encoded = self.label_encoder.fit_transform(y)
 
-    #     # Define the SVM model with a pipeline to standardize the data
-    #     self.svm_model = make_pipeline(StandardScaler(), SVC(kernel='linear', probability=True))
+        # Define the SVM model with a pipeline to standardize the data
+        self.svm_model = make_pipeline(StandardScaler(), SVC(kernel='linear', probability=True))
 
-    #     # Train the SVM model on the full dataset for saving
-    #     self.svm_model.fit(X, y_encoded)
+        # Train the SVM model on the full dataset for saving
+        self.svm_model.fit(X, y_encoded)
 
-    #     # Perform 5-fold cross-validation
-    #     cross_val_scores = cross_val_score(self.svm_model, X, y_encoded, cv=5)
-    #     mean_accuracy = cross_val_scores.mean() * 100  # Convert to percentage
+        # Perform 5-fold cross-validation
+        cross_val_scores = cross_val_score(self.svm_model, X, y_encoded, cv=5)
+        mean_accuracy = cross_val_scores.mean() * 100  # Convert to percentage
 
-    #     # Print accuracy results
-    #     print("Cross-Validation Scores:", cross_val_scores)
-    #     print("Mean Accuracy:", mean_accuracy, "%")
+        # Print accuracy results
+        # print("Cross-Validation Scores:", cross_val_scores)
+        # print("Mean Accuracy:", mean_accuracy, "%")
 
-    #     return mean_accuracy
+        return mean_accuracy
 
     # def save(self, folderPath : str):
     #     # Save the trained model and label encoder

@@ -1,4 +1,4 @@
-import sys, os, platform, time
+import sys, os, platform, time, traceback
 from lib.genose.classifier import BaseClassifier, NNClassifier, SVMClassifier, RFClassifier, PredictionThread
 from lib.communication.data_collector import DataCollectionThread, DataCollector
 from lib.communication.communication import Communication
@@ -119,10 +119,61 @@ def readModels():
 
     return customs, defaults
 
-class FindPortWorker(QObject):
-    port_search_progress = pyqtSignal(int)
-    port_search_finished = pyqtSignal(str)
+class WorkerSignals(QObject):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal(str)
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
 
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super().__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['progress_callback'] = self.signals.progress
+
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit("result")  # Done
+
+class FindPortWorker(QRunnable, QObject):
+    def __init__(self):
+        super().__init__()
+
+        self.signal = WorkerSignals()
+    
     def run(self):
         selectedPort = ""
         ports = serial.tools.list_ports.comports()
@@ -131,7 +182,7 @@ class FindPortWorker(QObject):
 
         for port in ports:
             try:
-                self.port_search_progress.emit(int((cur / ports_ln) * 100))
+                self.signal.progress.emit(int((cur / ports_ln) * 100))
                 cur += 1
 
                 portname = port.device
@@ -164,8 +215,11 @@ class FindPortWorker(QObject):
                 
             except Exception as e:
                 print(e)
+            
+            finally:
+                ser.close()
 
-        self.port_search_finished.emit(selectedPort)
+        self.signal.finished.emit(selectedPort)
 
 class PreprocessWorker(QObject):
     progress = pyqtSignal(int)
@@ -220,6 +274,8 @@ class Genose(QObject):
         self.DEFAULT_AI_DICT = AI_MODEL_DICT
         self.CUSTOM_AI_DICT = {}
 
+        self.threadpool = QThreadPool()
+
     def __onDataCollectionFinish(self, datas : pd.DataFrame):
         self.sensorData = datas
         self.data_collection_finished.emit(SUCCESS)
@@ -234,19 +290,10 @@ class Genose(QObject):
 
     def findGenosePort(self):
         self.findportworker = FindPortWorker()
-        self.findportthread = QThread()
-
-        self.findportworker.moveToThread(self.findportthread)
-
-        self.findportthread.started.connect(self.findportworker.run)
-        self.findportworker.port_search_progress.connect(lambda val: self.genose_port_search_progress.emit(val))
-        self.findportworker.port_search_finished.connect(lambda port: self.genose_port_search_finished.emit(port))
-        self.findportworker.port_search_finished.connect(self.findportthread.quit)
+        self.findportworker.signal.progress.connect(lambda x : self.genose_port_search_progress.emit(x))
+        self.findportworker.signal.finished.connect(lambda x : self.genose_port_search_finished.emit(x))
         
-        self.findportworker.port_search_finished.connect(self.findportworker.deleteLater)
-        self.findportthread.finished.connect(self.findportthread.deleteLater)
-
-        self.findportthread.start()
+        self.threadpool.start(self.findportworker)
 
 
     def loadModelModuleFromFile(self, path : str, name : str):
@@ -321,6 +368,9 @@ class Genose(QObject):
         dataCollector.sendSetFlush(flush)
         dataCollector.deinitialize()
 
+    def extractFeatures(self, datas : pd.DataFrame, features):
+        return datas
+
     def startCollectData(self, port, amount = DEFAULT_DATA_COLLECT_AMOUNT):
         self.data_collection_thread = DataCollectionThread()
         self.data_collection_thread.finished.connect(self.__onDataCollectionFinish)
@@ -346,10 +396,32 @@ class Genose(QObject):
 
         self.prepThread.started.connect(self.prepWorker.run)
         # self.prepWorker.progress.connect(lambda val: self.genose_port_search_progress.emit(val))
-        self.prepWorker.finished.connect(lambda port: self.genose_port_search_finished.emit(port))
+        # self.prepWorker.finished.connect(lambda port: self.genose_port_search_finished.emit(port))
         self.prepWorker.finished.connect(self.prepThread.quit)
         
-        self.prepWorker.port_search_finished.connect(self.prepWorker.deleteLater)
+        # self.prepWorker.port_search_finished.connect(self.prepWorker.deleteLater)
         self.prepThread.finished.connect(self.prepThread.deleteLater)
 
         self.prepThread.start()
+
+    def __startTraining(self, aiModule, features, label, progress_callback = None):
+        try:
+            classifier : BaseClassifier = aiModule.Classifier()
+
+            datas = self.sensorData
+
+            datas = self.extractFeatures(datas, features)
+            
+            result = classifier.train(self.sensorData)
+
+            print(f"Akurasi : {result}")
+
+            # return classifier
+    
+        except Exception as e:
+            print(e)
+        
+    def startTraining(self, aiModule, features):
+        worker = Worker(self.__startTraining, aiModule, features)
+        
+        self.threadpool.start(worker)
